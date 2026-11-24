@@ -3,6 +3,6 @@
 // anon(public) 키는 공개돼도 괜찮은 키예요. 데이터는 schema.sql 의 권한 규칙이 지켜요.
 // service_role 키는 절대 여기에 넣지 마세요.
 window.ROWING_CONFIG = {
-  url: "",      // 예: "https://abcdefghijkl.supabase.co"
-  anonKey: ""   // 예: "eyJhbGciOi..."
+  url: "https://aszhkuctbsqskasmkcxw.supabase.co",      // 예: "https://abcdefghijkl.supabase.co"
+  anonKey: "sb_publishable_MpwffoFw5nDqiGlmWQAqHA_97Kpzh7r"   // 예: "eyJhbGciOi..."
 };
