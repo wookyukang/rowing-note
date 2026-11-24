@@ -186,6 +186,12 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .plan .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer}
 .chk input{width:18px;height:18px;padding:0;accent-color:var(--lake)}
+.ath{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ath .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.ath .nm{font-weight:700;font-size:16px}
+.ath .meta{font:500 12px var(--f-mono);color:var(--muted)}
+.ath .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.ath .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .weeknav{display:flex;align-items:center;gap:8px}
 .weeknav .secondary{padding:5px 10px}
 .weeknav b{font-family:var(--f-mono);font-size:14px;white-space:nowrap}
@@ -269,6 +275,7 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
     <button role="tab" data-tab="me" aria-selected="false">내 기록</button>
     <button role="tab" data-tab="board" aria-selected="false">팀 보드</button>
     <button role="tab" data-tab="crew" aria-selected="false">크루 구성</button>
+    <button role="tab" data-tab="manage" aria-selected="false" id="tabManage" hidden>선수 관리</button>
   </nav>
 
   <div class="banner" id="demoBanner" hidden><b>예시 데이터</b>로 보여주는 중이에요. 우리 팀 첫 기록이 저장되면 예시는 사라져요.</div>
@@ -476,6 +483,24 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
         <thead><tr><th>날짜</th><th>선수</th><th>종목</th><th>거리</th><th>시간</th><th>/500m</th><th>W</th><th>SPM</th><th>심박</th><th>컨디션</th><th></th></tr></thead>
         <tbody id="tbody"></tbody>
       </table></div>
+    </section>
+  </div>
+
+  <!-- 선수 관리 (코치) -->
+  <div id="view-manage" class="stack" hidden>
+    <section class="panel">
+      <div class="head-row"><h2>선수 관리</h2><span class="lbl" id="mgCount"></span></div>
+      <p class="sub">선수 정보를 고치고, 졸업한 선수는 숨기고, 두 번 등록된 선수는 합칠 수 있어요. 코치에게만 보여요.</p>
+      <div class="stack" id="mgList" style="gap:10px"></div>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2>숨긴 선수</h2><span class="lbl">졸업·휴식 등</span></div>
+      <div class="stack" id="mgHidden" style="gap:10px"></div>
+    </section>
+    <section class="panel">
+      <h2>팀 계정</h2>
+      <p class="sub">앱에 가입한 사람들이에요.</p>
+      <div class="tablebox"><table><thead><tr><th>이름</th><th>역할</th><th>가입일</th></tr></thead><tbody id="mgMembers"></tbody></table></div>
     </section>
   </div>
 
@@ -692,6 +717,7 @@ function demo(){
 const S={tab:"log",type:"2k",feel:0,pain:new Set(),planId:null,athletes:[],records:[],plans:[],seatraces:[],live:false,demo:true,filter:"all",db:null,me:null,sel:null,
   crew:{size:4,A:new Set(),B:new Set()},week:0,prog:PROGRAMS[0].id};
 let downloads=null,sampler=null;
+function nameOf(r){const a=(S.allAthletes||S.athletes).find(x=>x.id===r.athleteId);return a?a.name:r.athleteName;}
 function D(){if(!S.demo)return {athletes:S.athletes,records:S.records,plans:S.plans,seatraces:S.seatraces};const d=demo();return {athletes:d.athletes,records:d.records,plans:S.plans.length?S.plans:d.plans,seatraces:S.seatraces};}
 function errText(e){
   const c=e&&e.code;
@@ -700,10 +726,10 @@ function errText(e){
   return "저장하지 못했어요. 잠시 후 다시 시도해 주세요."+why;
 }
 function msg(id,text,kind){const m=$(id);m.hidden=false;m.textContent=text;m.className="msg "+(kind||"");}
-function confirmBtn(label,onYes){
+function confirmBtn(label,onYes,sure){
   let armed=false,timer;
   const b=el("button",{class:"del",type:"button",text:label,onclick:async()=>{
-    if(!armed){armed=true;b.textContent="정말 삭제";b.classList.add("confirm");timer=setTimeout(()=>{armed=false;b.textContent=label;b.classList.remove("confirm");},3000);return;}
+    if(!armed){armed=true;b.textContent=sure||"정말 삭제";b.classList.add("confirm");timer=setTimeout(()=>{armed=false;b.textContent=label;b.classList.remove("confirm");},3000);return;}
     clearTimeout(timer);b.disabled=true;try{await onYes();}catch(e){b.disabled=false;b.textContent="실패";}
   }});
   return b;
@@ -1180,7 +1206,7 @@ function renderBoard(){
   // 통증
   const since=dayOff(-2);
   const pains=records.filter(r=>r.pain&&r.pain.length&&r.date>=since).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);
-  $("alerts").replaceChildren(...(pains.length?pains.map(r=>el("li",null,el("b",{text:r.athleteName}),el("small",{text:mmdd(r.date)}),el("div",{text:r.pain.join(", ")+(r.painNote?" · "+r.painNote:"")}))):[el("li",{class:"empty",style:"border:0;background:none;padding:0",text:"최근 3일 동안 통증 보고가 없어요."})]));
+  $("alerts").replaceChildren(...(pains.length?pains.map(r=>el("li",null,el("b",{text:S.demo?r.athleteName:nameOf(r)}),el("small",{text:mmdd(r.date)}),el("div",{text:r.pain.join(", ")+(r.painNote?" · "+r.painNote:"")}))):[el("li",{class:"empty",style:"border:0;background:none;padding:0",text:"최근 3일 동안 통증 보고가 없어요."})]));
   // 랭킹
   const rt=S.rankType||"2k",rd=rt==="1k"?1000:2000;
   $("rankTitle").textContent=(rt==="1k"?"1000m":"2000m")+" 랭킹";
@@ -1190,7 +1216,7 @@ function renderBoard(){
   if(!list.length)$("rank").replaceChildren(el("li",{class:"empty",text:"아직 "+(rt==="1k"?"1000m":"2000m")+" 테스트 기록이 없어요."}));
   else{const f=list[0].timeSec,s=list[list.length-1].timeSec;
     $("rank").replaceChildren(...list.map((r,i)=>{const w=s===f?100:100-((r.timeSec-f)/(s-f))*55;
-      return el("li",null,el("span",{class:"pos",text:i+1}),el("div",{class:"who"},el("span",{class:"name",text:r.athleteName}),el("div",{class:"bar"},el("i",{style:"width:"+w.toFixed(1)+"%"}))),
+      return el("li",null,el("span",{class:"pos",text:i+1}),el("div",{class:"who"},el("span",{class:"name",text:S.demo?r.athleteName:nameOf(r)}),el("div",{class:"bar"},el("i",{style:"width:"+w.toFixed(1)+"%"}))),
         el("div",{class:"num"},el("b",{text:fmtTime(r.timeSec)}),el("small",{text:fmtTime(split(r.timeSec,rd))+" · "+Math.round(watts(r.timeSec,rd))+"W · "+(i?"+"+(r.timeSec-f).toFixed(1)+"초":"1위")})));}));}
   // 컨디션
   const t=today();$("todayLbl").textContent=t;
@@ -1200,7 +1226,7 @@ function renderBoard(){
   $("filter").replaceChildren(el("button",{class:"chip",type:"button","aria-pressed":String(S.filter==="all"),onclick:()=>{S.filter="all";renderBoard();}},"전체"),
     ...BOARD_FILTER.map(id=>el("button",{class:"chip",type:"button","aria-pressed":String(S.filter===id),onclick:()=>{S.filter=id;renderBoard();}},typeOf(id).label)));
   const rows=records.filter(r=>S.filter==="all"||r.type===S.filter).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,300);
-  $("tbody").replaceChildren(...(rows.length?rows.map(r=>el("tr",null,el("td",{class:"m",text:mmdd(r.date)}),el("td",{text:r.athleteName}),el("td",{text:typeLabel(r)}),
+  $("tbody").replaceChildren(...(rows.length?rows.map(r=>el("tr",null,el("td",{class:"m",text:mmdd(r.date)}),el("td",{text:S.demo?r.athleteName:nameOf(r)}),el("td",{text:typeLabel(r)}),
       el("td",{class:"m",text:r.distance||"-"}),el("td",{class:"m",text:fmtTime(r.timeSec)}),el("td",{class:"m",text:r.type==="bike"||!r.distance?"-":fmtTime(split(r.timeSec,r.distance))}),
       el("td",{class:"m",text:r.type==="bike"?(r.power||"-"):r.type==="water"||!r.distance?"-":Math.round(watts(r.timeSec,r.distance))}),el("td",{class:"m",text:r.rpe?"RPE "+r.rpe:r.rate||"-"}),el("td",{class:"m",text:r.hr||"-"}),
       el("td",null,el("span",{class:"pill p"+(r.feel||0),text:FEEL_LABEL[r.feel||0]})),
@@ -1211,7 +1237,7 @@ async function exportCsv(){
   if(S.demo)return;
   const head=["날짜","선수","종목","보트","거리(m)","시간","/500m","와트","레이트","평균심박","전반부심박","후반부심박","컨디션","체중","통증","통증메모","RPE","파워","내용"];
   const q=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const rows=[...S.records].sort((a,b)=>a.date.localeCompare(b.date)||a.createdAt-b.createdAt).map(r=>[r.date,r.athleteName,typeOf(r.type).label,r.boat||"",r.distance||"",fmtTime(r.timeSec),r.type==="bike"||!r.distance?"":fmtTime(split(r.timeSec,r.distance)),r.type==="bike"?(r.power||""):r.type==="water"||!r.distance?"":Math.round(watts(r.timeSec,r.distance)),r.rate||"",r.hr||"",r.hr1||"",r.hr2||"",FEEL_LABEL[r.feel||0],r.weight||"",(r.pain||[]).join("/"),r.painNote||"",r.rpe||"",r.power||"",r.gymNote||""]);
+  const rows=[...S.records].sort((a,b)=>a.date.localeCompare(b.date)||a.createdAt-b.createdAt).map(r=>[r.date,nameOf(r),typeOf(r.type).label,r.boat||"",r.distance||"",fmtTime(r.timeSec),r.type==="bike"||!r.distance?"":fmtTime(split(r.timeSec,r.distance)),r.type==="bike"?(r.power||""):r.type==="water"||!r.distance?"":Math.round(watts(r.timeSec,r.distance)),r.rate||"",r.hr||"",r.hr1||"",r.hr2||"",FEEL_LABEL[r.feel||0],r.weight||"",(r.pain||[]).join("/"),r.painNote||"",r.rpe||"",r.power||"",r.gymNote||""]);
   const csv="﻿"+[head,...rows].map(r=>r.map(q).join(",")).join("\r\n");
   const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
   const a=document.createElement("a");a.href=url;a.download="로잉노트_기록_"+today()+".csv";document.body.append(a);a.click();a.remove();
@@ -1285,11 +1311,87 @@ async function saveSeat(){
   catch(e){msg("srMsg",errText(e),"err");}
 }
 
+// =============== 선수 관리 ===============
+let mgOpen=null,mgMembersAt=0,mgMembers=[];
+async function loadMembers(){
+  if(!sb||Date.now()-mgMembersAt<30000)return;mgMembersAt=Date.now();
+  const {data}=await sb.from("members").select("name,role,created_at").order("created_at");
+  mgMembers=data||[];if(S.tab==="manage")renderMembers();
+}
+function renderMembers(){
+  $("mgMembers").replaceChildren(...(mgMembers.length?mgMembers.map(m=>el("tr",null,el("td",{text:m.name}),el("td",null,el("span",{class:"pill "+(m.role==="coach"?"p3":"p0"),text:m.role==="coach"?"코치":"선수"})),el("td",{class:"m",text:(m.created_at||"").slice(0,10)}))):[el("tr",null,el("td",{colspan:"3",class:"empty",text:"불러오는 중..."}))]));
+}
+function athCard(a,all){
+  const recs=S.records.filter(r=>r.athleteId===a.id);
+  const lastD=recs.reduce((m,r)=>r.date>m?r.date:m,"");
+  const b2=bestOf(S.records,a.id,"2k"),b1=bestOf(S.records,a.id,"1k");
+  const meta=["기록 "+recs.length+"개",lastD?"최근 "+mmdd(lastD):null,b2?"2k "+fmtTime(b2.timeSec):null,b1?"1k "+fmtTime(b1.timeSec):null,a.maxHR?"최대심박 "+a.maxHR:null].filter(Boolean).join(" · ");
+  const open=mgOpen===a.id;
+  const card=el("div",{class:"ath"},
+    el("div",{class:"top"},
+      el("div",null,el("div",{class:"nm",text:a.name}),el("div",{class:"meta",text:meta}),
+        el("div",{class:"badges"},el("span",{class:"pill "+(a.userId?"p4":"p0"),text:a.userId?"앱 가입":"코치가 추가"}),
+          el("span",{class:"pill p0",text:Number(a.raceDist)===1000?"중등부 1000m":"2000m"}),a.weightClass==="light"?el("span",{class:"pill p3",text:"경량급"+(a.targetWeight?" "+a.targetWeight+"kg":"")}):null)),
+      el("div",{class:"acts"},el("button",{class:"secondary",type:"button",onclick:()=>{mgOpen=open?null:a.id;renderManage();}},open?"닫기":"수정"))));
+  if(open){
+    const f=el("div",{class:"stack",style:"gap:10px"},
+      el("div",{class:"row"},
+        el("div",{class:"field"},el("label",{class:"lbl",for:"mgName"},"이름"),el("input",{id:"mgName",value:a.name,maxlength:"20"})),
+        el("div",{class:"field"},el("label",{class:"lbl",for:"mgRace"},"부문"),el("select",{id:"mgRace"},el("option",{value:"2000",text:"고등·일반 (2000m)"}),el("option",{value:"1000",text:"중등부 (1000m)"}))),
+        el("div",{class:"field"},el("label",{class:"lbl",for:"mgClass"},"체급"),el("select",{id:"mgClass"},el("option",{value:"open",text:"오픈급"}),el("option",{value:"light",text:"경량급"})))),
+      el("div",{class:"row2"},
+        el("div",{class:"field"},el("label",{class:"lbl",for:"mgMax"},"최대 심박"),el("input",{id:"mgMax",class:"mono",inputmode:"numeric",value:a.maxHR||"",placeholder:"195"})),
+        el("div",{class:"field"},el("label",{class:"lbl",for:"mgTarget"},"목표 체중 (kg)"),el("input",{id:"mgTarget",class:"mono",inputmode:"decimal",value:a.targetWeight||"",placeholder:"70.0"}))),
+      el("button",{class:"primary",type:"button",onclick:()=>saveAth(a)},"저장"),
+      el("p",{class:"msg",id:"mgMsg"}));
+    card.append(f);
+    f.querySelector("#mgRace").value=String(a.raceDist||2000);f.querySelector("#mgClass").value=a.weightClass||"open";
+    const others=all.filter(x=>x.id!==a.id);
+    const mergeSel=el("select",{id:"mgMerge","aria-label":"합칠 선수"},el("option",{value:"",text:"이 선수의 기록을 옮길 대상 선택"}),...others.map(x=>el("option",{value:x.id,text:x.name+(x.userId?" (앱 가입)":"")})));
+    card.append(el("div",{class:"field"},el("span",{class:"lbl",text:"두 번 등록됐다면 합치기"}),
+      el("div",{class:"add-row"},mergeSel,confirmBtn("합치기",()=>mergeAth(a,mergeSel.value),"정말 합치기")),
+      el("p",{class:"note",text:"이 선수의 기록 "+recs.length+"개를 고른 선수에게 옮기고, 이 선수는 명단에서 지워요."})));
+    card.append(el("div",{class:"acts"},
+      el("button",{class:"secondary",type:"button",onclick:()=>hideAth(a,!a.hidden)},a.hidden?"다시 보이기":"숨기기 (졸업·휴식)"),
+      confirmBtn("명단에서 삭제",()=>S.db.collection("athletes").doc(a.id).delete(),"정말 삭제"),
+      el("span",{class:"note",text:a.userId?"삭제해도 계정은 남고, 기록은 그대로 남아요.":"삭제해도 기록은 그대로 남아요."})));
+  }
+  return card;
+}
+function renderManage(){
+  if(S.role!=="coach")return;
+  const all=S.allAthletes||S.athletes;
+  const vis=all.filter(a=>!a.hidden),hid=all.filter(a=>a.hidden);
+  $("mgCount").textContent="선수 "+vis.length+"명"+(hid.length?" · 숨김 "+hid.length+"명":"");
+  $("mgList").replaceChildren(...(vis.length?vis.map(a=>athCard(a,all)):[el("p",{class:"empty",text:"아직 선수가 없어요. 선수 코드를 공유하거나 기록하기에서 '+ 선수 추가'를 눌러요."})]));
+  $("mgHidden").replaceChildren(...(hid.length?hid.map(a=>athCard(a,all)):[el("p",{class:"empty",text:"숨긴 선수가 없어요."})]));
+  renderMembers();loadMembers();
+}
+async function saveAth(a){
+  const name=$("mgName").value.trim(),mx=num("mgMax");
+  if(!name){msg("mgMsg","이름을 입력해 주세요.","err");return;}
+  if(mx&&(mx<150||mx>230)){msg("mgMsg","최대 심박은 150–230 사이로 넣어주세요.","err");return;}
+  try{await S.db.collection("athletes").doc(a.id).update({name,raceDist:Number($("mgRace").value),weightClass:$("mgClass").value,maxHR:mx||null,targetWeight:numf("mgTarget")});
+    mgOpen=null;msg("mgMsg","저장했어요.","ok");}
+  catch(e){msg("mgMsg",errText(e),"err");}
+}
+async function hideAth(a,h){try{await S.db.collection("athletes").doc(a.id).update({hidden:h});mgOpen=null;}catch(e){msg("mgMsg",errText(e),"err");}}
+async function mergeAth(from,toId){
+  const to=(S.allAthletes||[]).find(x=>x.id===toId);if(!to){msg("mgMsg","합칠 선수를 골라주세요.","err");throw new Error("no target");}
+  const recs=S.records.filter(r=>r.athleteId===from.id);
+  for(let i=0;i<recs.length;i++){msg("mgMsg","기록 옮기는 중... "+(i+1)+"/"+recs.length,"");await S.db.collection("records").doc(recs[i].id).update({athleteId:to.id,athleteName:to.name});}
+  const patch={};for(const k of ["maxHR","raceDist","weightClass","targetWeight"])if(to[k]==null&&from[k]!=null)patch[k]=from[k];
+  if(Object.keys(patch).length)await S.db.collection("athletes").doc(to.id).update(patch);
+  await S.db.collection("athletes").doc(from.id).delete();
+  mgOpen=null;msg("mgMsg",from.name+" 기록을 "+to.name+"에게 합쳤어요.","ok");
+}
+
 // =============== 공통 ===============
 function setTab(t){
   S.tab=t;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===t)));
-  for(const v of ["log","plan","me","board","crew"])$("view-"+v).hidden=v!==t;
+  if(t==="manage"&&S.role!=="coach")t="log",S.tab="log";
+  for(const v of ["log","plan","me","board","crew","manage"])$("view-"+v).hidden=v!==t;
   renderTab();
   try{localStorage.setItem("rn-tab",t);}catch(e){}
 }
@@ -1298,6 +1400,7 @@ function renderTab(){
   else if(S.tab==="me")renderMe();
   else if(S.tab==="board")renderBoard();
   else if(S.tab==="crew"){renderCrew();renderSeat();}
+  else if(S.tab==="manage")renderManage();
 }
 function refreshMode(){
   S.demo=!S.records.length;
@@ -1445,12 +1548,13 @@ function startApp(m){
     if(TEAM.coach_code)codes.push(el("span",null,"코치 코드 ",el("button",{class:"code",type:"button",title:"눌러서 복사",onclick:e=>copyText(TEAM.coach_code,e.target)},TEAM.coach_code)));}
   $("tbCodes").replaceChildren(...codes);
   const coach=m.role==="coach";
-  $("addAthleteBtn").hidden=!coach;$("planAddToggle").hidden=!coach;$("progToggle").hidden=!coach;
+  $("addAthleteBtn").hidden=!coach;$("tabManage").hidden=!coach;if(!coach&&S.tab==="manage")setTab("log");$("planAddToggle").hidden=!coach;$("progToggle").hidden=!coach;
   downloads=true;S.db=makeDB();S.live=true;
   const db=S.db;
   const loading=setTimeout(()=>msg("msg","팀 기록을 아직 불러오지 못했어요. 인터넷 연결을 확인해 주세요.","err"),10000);
   db.collection("athletes").orderBy("name").onSnapshot(s=>{
-    S.athletes=s.docs.map(d=>({id:d.id,...d.data()}));
+    S.allAthletes=s.docs.map(d=>({id:d.id,...d.data()}));
+    S.athletes=S.allAthletes.filter(a=>!a.hidden);
     renderAthletes();
     if(pendingSelect&&S.athletes.some(a=>a.id===pendingSelect)){$("athlete").value=pendingSelect;setSel(pendingSelect);pendingSelect=null;preview();renderZoneHint();renderGuide();}
     renderTab();
