@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0e5e6f">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>개인정보 처리방침 · 로잉노트</title>
+<style>
+  :root{--bg:#eef3f4;--surface:#fff;--ink:#0f2a33;--muted:#5b7179;--line:#d3dfe2;--lake:#0e5e6f;--buoy:#e2571e}
+  @media (prefers-color-scheme:dark){:root{--bg:#0a1a1f;--surface:#10262d;--ink:#e3eef0;--muted:#93a9af;--line:#21404a;--lake:#5fb7c9;--buoy:#ff7a45;color-scheme:dark}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.7 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    padding:24px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+  main{max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:16px;margin:28px 0 8px;color:var(--lake)}
+  p,li{margin:6px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:13px}
+  .box{overflow-x:auto}
+  .todo{background:#fde6dc;color:#7a2d0c;border-radius:6px;padding:0 4px}
+  .muted{color:var(--muted);font-size:13px}
+  a{color:var(--lake)}
+</style>
+</head>
+<body>
+<main>
+  <h1>개인정보 처리방침</h1>
+  <p class="muted">로잉노트 · 시행일 <span class="todo">2026년 ○월 ○일</span></p>
+
+  <p>로잉노트(이하 "서비스")는 조정팀의 훈련 기록 관리를 위해 필요한 최소한의 개인정보만 처리합니다. 이 방침은 어떤 정보를, 왜, 얼마나 오래 처리하는지 설명합니다.</p>
+
+  <h2>1. 수집하는 정보와 목적</h2>
+  <div class="box"><table>
+    <tr><th>구분</th><th>항목</th><th>목적</th></tr>
+    <tr><td>필수</td><td>아이디, 비밀번호(암호화되어 저장), 이름, 소속 팀, 역할(코치·선수)</td><td>회원 가입, 로그인, 팀 구분</td></tr>
+    <tr><td>필수</td><td>훈련 기록(종목, 거리, 시간, 레이트, 날짜), 훈련 계획, 코치 피드백</td><td>훈련 기록 관리와 코치 지도</td></tr>
+    <tr><td>건강정보 (입력은 선택)</td><td>심박수, 최대 심박, 체중·목표 체중, 통증 부위와 메모, 컨디션, 운동 자각도(RPE)</td><td>훈련 강도 안내, 부상 예방, 체중 관리</td></tr>
+    <tr><td>만 14세 미만</td><td>보호자 이름, 보호자 동의 여부</td><td>법정대리인 동의 확인</td></tr>
+  </table></div>
+  <p>이메일, 전화번호, 생년월일, 주소는 받지 않습니다. 건강정보는 이용자가 직접 입력한 항목만 저장됩니다.</p>
+
+  <h2>2. 보유 기간</h2>
+  <ul>
+    <li>회원 탈퇴 시 계정과 본인의 훈련 기록, 건강정보, 받은 피드백을 <b>즉시 삭제</b>합니다. (앱 → 내 계정 → 탈퇴하기)</li>
+    <li>코치가 팀을 삭제하면 그 팀의 기록, 계획, 피드백이 즉시 삭제됩니다.</li>
+    <li>마지막 이용 후 <span class="todo">○년</span> 동안 이용이 없으면 삭제할 수 있습니다.</li>
+  </ul>
+
+  <h2>3. 누가 볼 수 있나요</h2>
+  <ul>
+    <li>훈련 기록: 같은 팀의 코치와 팀원</li>
+    <li>코치 피드백: 해당 선수와 그 팀 코치만</li>
+    <li>운영자: 서비스 운영 화면에서는 팀별 숫자(가입자 수, 기록 수)만 봅니다. 장애 대응이나 이용자 요청 처리처럼 꼭 필요한 경우에만 데이터에 접근합니다.</li>
+  </ul>
+
+  <h2>4. 제3자 제공</h2>
+  <p>이용자의 개인정보를 제3자에게 제공하거나 판매하지 않습니다. 법령에 따른 요청이 있는 경우는 예외입니다.</p>
+
+  <h2>5. 처리 위탁과 국외 이전</h2>
+  <p>서비스 운영을 위해 아래 업체의 클라우드를 사용하며, 정보가 국외 서버에 저장됩니다.</p>
+  <div class="box"><table>
+    <tr><th>업체</th><th>위탁 업무</th><th>저장 위치</th></tr>
+    <tr><td>Supabase Inc.</td><td>데이터베이스, 로그인</td><td>싱가포르 (AWS ap-southeast-1)</td></tr>
+    <tr><td>Vercel Inc.</td><td>웹사이트 호스팅</td><td>미국 등</td></tr>
+  </table></div>
+  <p>정보는 이용 시점부터 회원 탈퇴 시까지 네트워크를 통해 전송·보관됩니다. 국외 이전을 원하지 않으면 가입하지 않거나 탈퇴할 수 있으며, 이 경우 서비스를 이용할 수 없습니다.</p>
+
+  <h2>6. 만 14세 미만 이용자</h2>
+  <p>만 14세 미만은 보호자(법정대리인)의 동의를 받아야 가입할 수 있습니다. 보호자는 언제든 자녀 정보의 열람, 수정, 삭제를 요청할 수 있습니다.</p>
+
+  <h2>7. 이용자의 권리</h2>
+  <ul>
+    <li>열람·수정: 앱에서 본인 기록을 보고 고칠 수 있습니다.</li>
+    <li>삭제: 기록 삭제, 회원 탈퇴로 언제든 지울 수 있습니다.</li>
+    <li>동의 철회: 회원 탈퇴로 철회할 수 있습니다.</li>
+    <li>그 밖의 요청은 아래 개인정보 보호책임자에게 연락해 주세요.</li>
+  </ul>
+
+  <h2>8. 안전성 확보 조치</h2>
+  <ul>
+    <li>비밀번호는 암호화되어 저장되며 운영자도 알 수 없습니다.</li>
+    <li>모든 통신은 암호화(HTTPS)됩니다.</li>
+    <li>데이터베이스 권한 규칙으로 다른 팀의 데이터는 볼 수 없습니다.</li>
+    <li>운영 계정에는 2단계 인증을 사용합니다.</li>
+  </ul>
+
+  <h2>9. 개인정보 보호책임자</h2>
+  <p>이름: <span class="todo">○○○</span><br>연락처: <span class="todo">이메일 또는 연락처</span></p>
+  <p class="muted">개인정보 침해 신고: 개인정보침해신고센터 (privacy.kisa.or.kr, 국번 없이 118)</p>
+
+  <h2>10. 방침 변경</h2>
+  <p>이 방침이 바뀌면 시행 7일 전에 앱에서 알리고, 중요한 변경은 다시 동의를 받습니다.</p>
+
+  <p class="muted" style="margin-top:28px"><a href="./">← 로잉노트로 돌아가기</a></p>
+</main>
+</body>
+</html>

@@ -37,7 +37,7 @@ html{-webkit-text-size-adjust:100%}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
 img{max-width:100%}
-body.locked #tabs,body.locked [id^="view-"],body.locked .banner,body.locked #teambar{display:none!important}
+body.locked #tabs,body.locked [id^="view-"],body.locked .banner,body.locked #teambar,body.locked #acctBox,body.locked #adminBox{display:none!important}
 .teambar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13px}
 .teambar b{font-size:15px}
 .teambar .codes{display:flex;gap:8px;flex-wrap:wrap}
@@ -202,6 +202,10 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .fb .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 textarea{resize:vertical;line-height:1.5}
 .tabs .dot{display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--buoy);color:#fff;font:700 11px/18px var(--f-text);vertical-align:1px}
+.consent{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg)}
+.consent .chk{font-weight:500;align-items:flex-start;line-height:1.45}
+.consent .chk input{margin-top:2px;flex:none}
+.consent a,footer a,.note a{color:var(--lake)}
 .weeknav{display:flex;align-items:center;gap:8px}
 .weeknav .secondary{padding:5px 10px}
 .weeknav b{font-family:var(--f-mono);font-size:14px;white-space:nowrap}
@@ -268,16 +272,50 @@ textarea{resize:vertical;line-height:1.5}
       <div class="field"><label class="lbl" for="suName">이름</label><input id="suName" maxlength="20" placeholder="예: 김조정"></div>
       <div class="field" id="suCodeBox"><label class="lbl" for="suCode">팀 코드</label><input id="suCode" class="mono" maxlength="6" autocapitalize="characters" placeholder="ABC123"></div>
       <div class="field" id="suTeamBox" hidden><label class="lbl" for="suTeam">팀 이름</label><input id="suTeam" maxlength="30" placeholder="예: 한강고 조정부"></div>
+      <div id="consentSlot"></div>
       <button class="primary" id="suBtn" type="button">가입하기</button>
     </div>
     <p class="msg" id="authMsg"></p>
   </section>
 
+  <section class="panel auth" id="consentOnly" hidden>
+    <h2>개인정보 동의가 필요해요</h2>
+    <p class="sub">계속 쓰려면 아래 내용을 확인하고 동의해 주세요.</p>
+    <div id="consentSlot2"></div>
+    <button class="primary" id="consentBtn" type="button">동의하고 계속</button>
+    <p class="msg" id="consentMsg"></p>
+    <button class="linkbtn" id="consentLogout" type="button">로그아웃</button>
+  </section>
+
   <div class="teambar" id="teambar" hidden>
     <div><b id="tbTeam"></b> · <span id="tbMe"></span></div>
     <div class="codes" id="tbCodes"></div>
-    <button class="linkbtn" id="logoutBtn" type="button">로그아웃</button>
+    <div class="codes">
+      <button class="linkbtn" id="adminBtn" type="button" hidden>운영자 통계</button>
+      <button class="linkbtn" id="acctBtn" type="button">내 계정</button>
+      <button class="linkbtn" id="logoutBtn" type="button">로그아웃</button>
+    </div>
   </div>
+
+  <section class="panel" id="acctBox" hidden>
+    <div class="head-row"><h2>내 계정</h2><button class="linkbtn" id="acctClose" type="button">닫기</button></div>
+    <div class="facts" id="acctInfo" style="font-size:13px"></div>
+    <p class="note">개인정보를 어떻게 다루는지는 <a href="privacy.html" target="_blank" rel="noopener">개인정보 처리방침</a>에 있어요.</p>
+    <div class="field">
+      <span class="lbl">회원 탈퇴</span>
+      <p class="note" id="acctDelNote">탈퇴하면 계정과 내 훈련 기록, 받은 피드백, 체중·심박·통증 기록이 모두 바로 삭제되고 되돌릴 수 없어요.</p>
+      <div class="add-row"><input id="acctDelConfirm" placeholder="확인을 위해 '탈퇴'라고 입력"><button class="secondary" id="acctDelBtn" type="button" style="border-color:var(--bad);color:var(--bad)">탈퇴하기</button></div>
+      <p class="msg" id="acctMsg"></p>
+    </div>
+  </section>
+
+  <section class="panel" id="adminBox" hidden>
+    <div class="head-row"><h2>운영자 통계</h2><button class="linkbtn" id="adminClose" type="button">닫기</button></div>
+    <p class="sub">팀별 숫자만 보여요. 선수 이름이나 기록 내용은 이 화면에 나오지 않아요.</p>
+    <div class="stats" id="adminTotals"></div>
+    <div class="tablebox"><table class="wide"><thead><tr><th>팀</th><th>만든 날</th><th>코치</th><th>선수</th><th>전체 기록</th><th>최근 7일 기록</th><th>최근 7일 활동 인원</th><th>마지막 기록</th></tr></thead><tbody id="adminTeams"></tbody></table></div>
+    <p class="msg" id="adminMsg"></p>
+  </section>
 
   <nav class="tabs" role="tablist" id="tabs">
     <button role="tab" data-tab="log" aria-selected="true">기록하기</button>
@@ -536,6 +574,12 @@ textarea{resize:vertical;line-height:1.5}
       <p class="sub">앱에 가입한 사람들이에요.</p>
       <div class="tablebox"><table><thead><tr><th>이름</th><th>역할</th><th>가입일</th></tr></thead><tbody id="mgMembers"></tbody></table></div>
     </section>
+    <section class="panel">
+      <h2>팀 삭제</h2>
+      <p class="sub">팀의 모든 기록, 훈련 계획, 피드백이 삭제되고 되돌릴 수 없어요. 팀원 계정은 남지만 팀에서 빠져요. 시즌이 끝나 팀을 정리하거나 서비스를 그만 쓸 때만 쓰세요.</p>
+      <div class="add-row"><input id="teamDelConfirm" placeholder="확인을 위해 팀 이름 입력"><button class="secondary" id="teamDelBtn" type="button" style="border-color:var(--bad);color:var(--bad)">팀 삭제</button></div>
+      <p class="msg" id="teamDelMsg"></p>
+    </section>
   </div>
 
   <!-- 크루 구성 -->
@@ -572,6 +616,7 @@ textarea{resize:vertical;line-height:1.5}
       <div class="tablebox"><table><thead><tr><th>날짜</th><th>이긴 선수</th><th>진 선수</th><th>차이</th><th></th></tr></thead><tbody id="srBody"></tbody></table></div>
     </section>
   </div>
+  <footer class="note" style="text-align:center;padding-top:8px"><a href="privacy.html" target="_blank" rel="noopener">개인정보 처리방침</a></footer>
 </div>
 
 <script src="vendor/supabase.js"></script>
@@ -1649,6 +1694,32 @@ async function doLogin(){
   if(error){authMsg(/confirm/i.test(error.message)?"관리자 설정이 필요해요: Supabase에서 이메일 확인(Confirm email)을 꺼주세요.":"아이디나 비밀번호가 맞지 않아요.","err");return;}
   authMsg("","");await afterLogin();
 }
+const CONSENT_VERSION="2026-11-24";
+function consentBlock(px){
+  const wrap=el("div",{class:"consent"},
+    el("label",{class:"chk"},el("input",{type:"checkbox",id:px+"Priv"}),el("span",null,"[필수] 개인정보(아이디, 이름, 팀, 훈련 기록) 수집·이용에 동의해요. ",el("a",{href:"privacy.html",target:"_blank",rel:"noopener"},"내용 보기"))),
+    el("label",{class:"chk"},el("input",{type:"checkbox",id:px+"Health"}),el("span",null,"[필수] 건강정보(심박, 체중, 통증, 컨디션, RPE) 수집·이용에 동의해요. 입력은 선택이고, 입력한 것만 저장돼요.")),
+    el("div",{class:"field"},el("span",{class:"lbl",text:"나이"}),
+      el("div",{class:"chips sm"},el("button",{class:"chip",type:"button",id:px+"Over","aria-pressed":"true",onclick:()=>setAge(px,false)},"만 14세 이상"),
+        el("button",{class:"chip",type:"button",id:px+"Under","aria-pressed":"false",onclick:()=>setAge(px,true)},"만 14세 미만"))),
+    el("div",{class:"stack",id:px+"GuardBox",hidden:"hidden",style:"gap:8px"},
+      el("p",{class:"note",text:"만 14세 미만은 보호자(부모님 등)의 동의가 필요해요. 보호자에게 개인정보 처리방침을 보여주고 동의를 받아주세요."}),
+      el("label",{class:"chk"},el("input",{type:"checkbox",id:px+"Guard"}),el("span",{text:"보호자가 위 내용을 읽고 동의했어요."})),
+      el("input",{id:px+"GuardName",maxlength:"20",placeholder:"보호자 이름"})));
+  return wrap;
+}
+function setAge(px,under){$(px+"Over").setAttribute("aria-pressed",String(!under));$(px+"Under").setAttribute("aria-pressed",String(under));$(px+"GuardBox").hidden=!under;}
+function readConsent(px,msgId){
+  if(!$(px+"Priv").checked||!$(px+"Health").checked){msg(msgId,"필수 항목에 모두 동의해 주세요.","err");return null;}
+  const under=$(px+"Under").getAttribute("aria-pressed")==="true";
+  if(under&&(!$(px+"Guard").checked||!$(px+"GuardName").value.trim())){msg(msgId,"만 14세 미만은 보호자 동의 확인과 보호자 이름이 필요해요.","err");return null;}
+  return {p_version:CONSENT_VERSION,p_under14:under,p_guardian:under?$(px+"GuardName").value.trim():null};
+}
+async function saveConsent(c,msgId){
+  const {error}=await sb.rpc("give_consent",c);
+  if(error){msg(msgId,/give_consent|PGRST202|function/i.test(error.message+(error.code||""))?"서버 설정이 아직 안 됐어요. 운영자가 Supabase에서 03_privacy.sql 을 실행해야 해요.":error.message.replace(/^.*?:\s*/,""),"err");return false;}
+  return true;
+}
 async function doSignup(){
   const id=$("suId").value.trim().toLowerCase(),pw=$("suPw").value,name=$("suName").value.trim();
   const code=$("suCode").value.trim().toUpperCase(),team=$("suTeam").value.trim();
@@ -1659,6 +1730,7 @@ async function doSignup(){
   if(!name){authMsg("이름을 입력해 주세요.","err");return;}
   if(suMode==="join"&&code.length!==6){authMsg("팀 코드 6자리를 입력해 주세요.","err");return;}
   if(suMode==="create"&&!team){authMsg("팀 이름을 입력해 주세요.","err");return;}
+  const consent=readConsent("c1","authMsg");if(!consent)return;
   $("suBtn").disabled=true;
   try{
     if(!needTeamOnly){
@@ -1668,6 +1740,7 @@ async function doSignup(){
       if(!data.session){authMsg("관리자 설정이 필요해요: Supabase에서 이메일 확인(Confirm email)을 꺼주세요.","err");return;}
       S.me=(data.user&&data.user.id)||(data.session.user&&data.session.user.id)||null;
     }
+    if(!await saveConsent(consent,"authMsg")){needTeamOnly=true;showAuth("join");return;}
     const r=suMode==="create"?await sb.rpc("create_team",{p_team:team,p_name:name}):await sb.rpc("join_team",{p_code:code,p_name:name});
     if(r.error){authMsg(r.error.message.replace(/^.*?:\s*/,"")||"팀 가입에 실패했어요.","err");needTeamOnly=true;showAuth("join");return;}
     authMsg("","");startApp(r.data);
@@ -1681,11 +1754,19 @@ async function afterLogin(){
   if(!data){showAuth("join");return;}
   startApp(data);
 }
+function needsConsent(m){return m&&("consent" in m)&&(!m.consent||m.consent.version!==CONSENT_VERSION);}
+function showConsentOnly(m){
+  document.body.classList.add("locked");$("authBox").hidden=true;$("consentOnly").hidden=false;
+  $("consentBtn").onclick=async()=>{const c=readConsent("c2","consentMsg");if(!c)return;$("consentBtn").disabled=true;
+    if(await saveConsent(c,"consentMsg")){$("consentOnly").hidden=true;m.consent={version:CONSENT_VERSION,agreed_at:new Date().toISOString(),under14:c.p_under14};startApp(m);}
+    $("consentBtn").disabled=false;};
+}
 function copyText(t,btn){const done=()=>{const o=btn.textContent;btn.textContent="복사됨";setTimeout(()=>btn.textContent=o,1200);};
   if(navigator.clipboard)navigator.clipboard.writeText(t).then(done,()=>{});}
 let started=false;
 function startApp(m){
-  if(started)return;started=true;
+  if(needsConsent(m)){showConsentOnly(m);return;}
+  if(started)return;started=true;S.member=m;
   TEAM=m.team;S.role=m.role;S.myName=m.name;
   if(!S.me)sb.auth.getUser().then(r=>{S.me=r.data&&r.data.user&&r.data.user.id;renderAthletes();refreshMode();renderInbox();});
   document.body.classList.remove("locked");$("authBox").hidden=true;$("teambar").hidden=false;
@@ -1695,6 +1776,7 @@ function startApp(m){
     if(TEAM.coach_code)codes.push(el("span",null,"코치 코드 ",el("button",{class:"code",type:"button",title:"눌러서 복사",onclick:e=>copyText(TEAM.coach_code,e.target)},TEAM.coach_code)));}
   $("tbCodes").replaceChildren(...codes);
   const coach=m.role==="coach";
+  $("adminBtn").hidden=!m.is_admin;
   $("addAthleteBtn").hidden=!coach;$("tabManage").hidden=!coach;if(!coach&&S.tab==="manage")setTab("log");$("planAddToggle").hidden=!coach;$("progToggle").hidden=!coach;
   downloads=true;S.db=makeDB();S.live=true;
   const db=S.db;
@@ -1723,6 +1805,36 @@ $("liBtn").onclick=doLogin;$("liPw").addEventListener("keydown",e=>{if(e.key==="
 $("suBtn").onclick=doSignup;
 $("fbSend").onclick=sendFeedback;$("editCancel").onclick=()=>exitEdit(false);
 $("recDate").value=today();$("fbAthlete").addEventListener("change",()=>fillFbRecords());
+$("consentSlot").append(consentBlock("c1"));$("consentSlot2").append(consentBlock("c2"));
+$("consentLogout").onclick=async()=>{try{await sb.auth.signOut();}catch(e){}location.reload();};
+$("acctBtn").onclick=async()=>{const box=$("acctBox");box.hidden=!box.hidden;$("adminBox").hidden=true;if(box.hidden)return;
+  const {data}=await sb.auth.getUser();const m=S.member||{};const c=m.consent;
+  $("acctInfo").replaceChildren(el("span",{text:"아이디 "+((data&&data.user&&data.user.email)||"").split("@")[0]}),el("span",{text:"이름 "+(m.name||"")}),
+    el("span",{text:(m.role==="coach"?"코치":"선수")+" · "+(TEAM?TEAM.name:"")}),c?el("span",{text:"동의일 "+String(c.agreed_at||"").slice(0,10)+(c.under14?" (보호자 동의)":"")}):null);
+  $("acctDelNote").textContent=m.role==="coach"?"탈퇴하면 계정이 삭제되고, 남긴 피드백의 이름은 '(탈퇴한 코치)'로 바뀌어요. 팀에 다른 코치가 없으면 먼저 다른 코치를 초대하거나 선수 관리 탭에서 팀을 삭제해야 해요.":"탈퇴하면 계정과 내 훈련 기록, 받은 피드백, 체중·심박·통증 기록이 모두 바로 삭제되고 되돌릴 수 없어요.";
+  box.scrollIntoView({behavior:"smooth"});};
+$("acctClose").onclick=()=>{$("acctBox").hidden=true;};
+$("acctDelBtn").onclick=async()=>{
+  if($("acctDelConfirm").value.trim()!=="탈퇴"){msg("acctMsg","확인을 위해 '탈퇴'라고 입력해 주세요.","err");return;}
+  $("acctDelBtn").disabled=true;msg("acctMsg","삭제하는 중...","");
+  const {error}=await sb.rpc("delete_my_account");
+  if(error){$("acctDelBtn").disabled=false;msg("acctMsg",/PGRST202|function/i.test(error.message+(error.code||""))?"서버 설정이 아직 안 됐어요. 운영자가 03_privacy.sql 을 실행해야 해요.":error.message.replace(/^.*?:\s*/,""),"err");return;}
+  try{await sb.auth.signOut();}catch(e){}alert("탈퇴가 완료됐어요. 이용해 주셔서 고마워요.");location.reload();};
+$("adminBtn").onclick=async()=>{const box=$("adminBox");box.hidden=!box.hidden;$("acctBox").hidden=true;if(box.hidden)return;
+  msg("adminMsg","불러오는 중...","");const {data,error}=await sb.rpc("admin_stats");
+  if(error){msg("adminMsg",error.message.replace(/^.*?:\s*/,""),"err");return;}$("adminMsg").textContent="";
+  $("adminTotals").replaceChildren(
+    el("div",{class:"stat"},el("small",{text:"전체 가입자"}),el("strong",{text:data.users}),el("em",{text:"팀 "+data.teams.length+"개"})),
+    el("div",{class:"stat"},el("small",{text:"최근 7일 활동"}),el("strong",{text:data.active_7d+"명"}),el("em",{text:"기록 "+data.records_7d+"개"})),
+    el("div",{class:"stat"},el("small",{text:"만 14세 미만"}),el("strong",{text:data.under14+"명"}),el("em",{text:"동의 안 한 계정 "+data.no_consent+"명"})));
+  $("adminTeams").replaceChildren(...(data.teams.length?data.teams.map(t=>el("tr",null,el("td",{text:t.name}),el("td",{class:"m",text:t.created}),el("td",{class:"m",text:t.coaches}),el("td",{class:"m",text:t.athletes}),
+    el("td",{class:"m",text:t.records}),el("td",{class:"m",text:t.records_7d}),el("td",{class:"m",text:t.active_7d}),el("td",{class:"m",text:t.last_record||"-"}))):[el("tr",null,el("td",{colspan:"8",class:"empty",text:"팀이 없어요."}))]));};
+$("teamDelBtn").onclick=async()=>{
+  if(!TEAM||$("teamDelConfirm").value.trim()!==TEAM.name){msg("teamDelMsg","확인을 위해 팀 이름을 정확히 입력해 주세요.","err");return;}
+  $("teamDelBtn").disabled=true;const {error}=await sb.rpc("delete_team");
+  if(error){$("teamDelBtn").disabled=false;msg("teamDelMsg",/PGRST202|function/i.test(error.message+(error.code||""))?"서버 설정이 아직 안 됐어요. 03_privacy.sql 을 실행해 주세요.":error.message.replace(/^.*?:\s*/,""),"err");return;}
+  alert("팀을 삭제했어요.");location.reload();};
+$("adminClose").onclick=()=>{$("adminBox").hidden=true;};
 $("logoutBtn").onclick=async()=>{try{await sb.auth.signOut();}catch(e){}location.reload();};
 
 (async()=>{
