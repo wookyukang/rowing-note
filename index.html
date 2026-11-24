@@ -319,7 +319,7 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
         <div class="field"><label class="lbl" for="dist" id="lblDist">거리 (m)</label><input id="dist" class="mono" inputmode="numeric" placeholder="2000"></div>
         <div class="field"><label class="lbl" for="time">시간</label><input id="time" class="mono" inputmode="decimal" placeholder="6:58.4"></div>
         <div class="field"><label class="lbl" for="rate" id="lblRate">평균 레이트 (spm)</label><input id="rate" class="mono" inputmode="numeric" placeholder="32"></div>
-        <div class="field gymOnly" hidden><label class="lbl" for="rpe">힘든 정도 RPE (1–10)</label><input id="rpe" class="mono" inputmode="numeric" placeholder="7"></div>
+        <div class="field tipwrap"><span class="lblrow"><label class="lbl" for="rpe">운동 자각도 RPE (1–10)</label><button class="q" type="button" aria-describedby="tipRpe" aria-label="RPE 설명">?</button><span class="tip" role="tooltip" id="tipRpe"><b>RPE</b>는 운동이 얼마나 힘들었는지 스스로 매기는 점수예요. 심박계가 없어도 강도를 관리할 수 있어요.<br><br><b>1–2</b> 아주 쉬움 · 편하게 수다 가능<br><b>3–4</b> 쉬움 (존2) · 문장으로 대화 가능<br><b>5–6</b> 조금 힘듦 · 짧은 문장만<br><b>7–8</b> 힘듦 (AT·TR) · 몇 단어만<br><b>9–10</b> 최대 (레이스) · 말 못 함<br><br>운동 전체를 떠올리고 끝나고 30분 안에 적어요.</span></span><input id="rpe" class="mono" inputmode="numeric" placeholder="4"></div>
         <div class="field gymOnly" hidden><label class="lbl" for="gymNote">한 내용 (선택)</label><input id="gymNote" maxlength="80" placeholder="예: 3바퀴, 스쿼트 20kg"></div>
         <div class="field bikeOnly" hidden><label class="lbl" for="power">평균 파워 (W, 선택)</label><input id="power" class="mono" inputmode="numeric" placeholder="180"></div>
       </div>
@@ -443,6 +443,10 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
       <div id="meVol"></div>
     </section>
     <section class="panel">
+      <div class="head-row"><h2>훈련 부하</h2><span class="lbl">RPE × 운동 시간(분)</span></div>
+      <div id="meLoad"></div>
+    </section>
+    <section class="panel">
       <div class="head-row"><h2>체중</h2><span class="lbl" id="weightLbl"></span></div>
       <div id="meWeight"></div>
     </section>
@@ -533,6 +537,7 @@ const FEEL=[[1,"최악"],[2,"별로"],[3,"보통"],[4,"좋음"],[5,"최고"]];
 const FEEL_LABEL={0:"미입력",1:"최악",2:"별로",3:"보통",4:"좋음",5:"최고"};
 const PAIN=["허리","갈비뼈","무릎","손목·전완","어깨","기타"];
 const BOARD_FILTER=["ut2","30m","2k","1k","6k","int","bike","circuit","weights","water"];
+const ZONE_RPE={UT2:"3–4",UT1:"4–5",AT:"6–7",TR:"8–9",AN:"9–10"};
 const HRZ={UT2:[.65,.75],UT1:[.75,.80],AT:[.80,.85],TR:[.85,.92],AN:[.92,1]};
 const ZONES={UT2:["저강도 장거리 (존2)",18,22],UT1:["중강도 지구력",12,16],AT:["젖산 역치",7,10],TR:["고강도 인터벌",3,5],AN:["레이스 페이스 이상",-2,1]};
 function ses(d,type,o){return Object.assign({d,slot:"오전",type},o);}
@@ -612,7 +617,7 @@ function zoneTarget(zone,athleteId,records){
 }
 
 const $=id=>document.getElementById(id);
-function el(tag,attrs,...kids){const e=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}for(const c of kids){if(c==null||c===false)continue;e.append(c instanceof Node?c:document.createTextNode(String(c)));}return e;}
+function el(tag,attrs,...kids){const e=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}for(const c of kids.flat()){if(c==null||c===false)continue;e.append(c instanceof Node?c:document.createTextNode(String(c)));}return e;}
 const NS="http://www.w3.org/2000/svg";
 function sv(tag,attrs,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;return e;}
 const typeOf=id=>TYPES.find(t=>t.id===id)||{id,label:id};
@@ -665,12 +670,12 @@ function demo(){
     push({athleteId:a.id,athleteName:n,type:"1k",distance:1000,timeSec:t1+5.2,rate:30,date:dayOff(-35)});
     push({athleteId:a.id,athleteName:n,type:"1k",distance:1000,timeSec:t1+2.4,rate:31,date:dayOff(-20)});
     push({athleteId:a.id,athleteName:n,type:"1k",distance:1000,timeSec:t1,rate:32,feel:4,date:dayOff(-5),weight:kg});
-    push({athleteId:a.id,athleteName:n,type:"ut2",distance:7000,timeSec:7000/500*(t1/2+5+20),rate:19,hr:146,date:dayOff(-1)});
+    push({athleteId:a.id,athleteName:n,type:"ut2",distance:7000,timeSec:7000/500*(t1/2+5+20),rate:19,rpe:5,date:dayOff(-1)});
   });
   // 예시 김도현: 8주간 존2·수상, 체중 감량
   for(let w=0;w<8;w++){
     const k=-7*w;
-    push({athleteId:"d0",athleteName:A[0].name,type:"ut2",distance:16000,timeSec:3828+w*9,rate:19,hr:140,hr1:138,hr2:142+(w>4?3:0),date:dayOff(k-1),weight:Math.round((71.8+w*0.35)*10)/10});
+    push({athleteId:"d0",athleteName:A[0].name,type:"ut2",distance:16000,timeSec:3828+w*9,rate:19,hr:140,hr1:138,hr2:142+(w>4?3:0),rpe:4,date:dayOff(k-1),weight:Math.round((71.8+w*0.35)*10)/10});
     push({athleteId:"d0",athleteName:A[0].name,type:"ut2",distance:12000+((w%3)*2000),timeSec:(12000+((w%3)*2000))/16000*3840,rate:19,hr:141,date:dayOff(k-3),weight:Math.round((72.0+w*0.35)*10)/10});
     if(w%2===0)push({athleteId:"d0",athleteName:A[0].name,type:"water",boat:"4x",distance:14000,timeSec:3600,rate:20,date:dayOff(k-2)});
     if(w<3)push({athleteId:"d0",athleteName:A[0].name,type:"bike",distance:null,timeSec:3600,power:185,rate:86,hr:138,date:dayOff(k-5)});
@@ -765,10 +770,10 @@ function preview(){
 const zoneOf=maxHR=>({lo:Math.round(maxHR*.65),hi:Math.round(maxHR*.75),mid:Math.round(maxHR*.70)});
 function renderZoneHint(){
   const h=$("zoneHint");const a=curAthlete();
-  if(!a){h.replaceChildren("심박은 선택 사항이에요. 존2 세션에 넣으면 다음 세션 목표를 알려드려요.");$("maxRow").hidden=true;return;}
+  if(!a){h.replaceChildren("심박계가 없으면 RPE만 넣어도 존2 가이드를 받을 수 있어요. 맥박은 운동 직후 10초 동안 손목·목 맥박을 세서 ×6 하면 돼요.");$("maxRow").hidden=true;return;}
   const edit=el("button",{class:"linkbtn",type:"button",onclick:()=>{$("maxRow").hidden=!$("maxRow").hidden;$("maxhr").value=a.maxHR||"";}},a.maxHR?"최대 심박 변경":"최대 심박 입력");
   if(a.maxHR){const z=zoneOf(a.maxHR);h.replaceChildren("존2 심박 ",el("b",{text:z.lo+"–"+z.hi+" bpm"})," (최대 "+a.maxHR+" 기준)",edit);}
-  else h.replaceChildren(a.name+" 선수의 최대 심박을 넣으면 존2 범위를 계산해요.",edit);
+  else h.replaceChildren("심박계가 없으면 RPE만 넣어도 돼요. 최대 심박을 알면 심박 존도 계산해요.",edit);
 }
 async function saveMax(){
   const a=curAthlete();const v=num("maxhr");
@@ -798,7 +803,8 @@ async function saveRecord(){
     if(ty.zone){rec.hr1=num("hr1");rec.hr2=num("hr2");}
     if(ty.water)rec.boat=$("boat").value;
     if(ty.bike){rec.distance=d||null;rec.power=num("power");}
-    if(ty.gym){rec.distance=null;rec.rate=null;rec.rpe=num("rpe")?Math.min(10,num("rpe")):null;rec.gymNote=$("gymNote").value.trim()||null;}
+    rec.rpe=num("rpe")?Math.min(10,num("rpe")):null;
+    if(ty.gym){rec.distance=null;rec.rate=null;rec.gymNote=$("gymNote").value.trim()||null;}
     await S.db.collection("records").doc().set(rec);
     setSel(a.id);
     msg("msg","저장했어요. "+a.name+" · "+(ty.gym?ty.label+" "+fmtTime(t,0)+(rec.rpe?" · RPE "+rec.rpe:""):ty.bike?"바이크 "+fmtTime(t,0)+(rec.power?" · "+rec.power+"W":""):fmtTime(split(t,d))+" /500m")+(ty.zone&&rec.hr?" · 아래에서 다음 세션 목표를 확인하세요.":""),"ok");
@@ -897,8 +903,10 @@ function renderGuide(){
   const body=$("guideBody");
   if(!a){body.replaceChildren(el("p",{class:"empty",text:"선수를 고르면 그 선수의 존2 기록을 보고 다음 세션 목표를 알려드려요."}));return;}
   const ss=recs.filter(r=>r.athleteId===a.id&&r.type==="ut2"&&r.hr&&r.distance&&r.timeSec).sort((x,y)=>x.date.localeCompare(y.date)||x.createdAt-y.createdAt);
-  if(!a.maxHR){body.replaceChildren(el("p",{class:"empty",text:"위에서 '최대 심박 입력'을 누르고 최대 심박을 넣어주세요. 존2 범위를 계산할 수 있어야 가이드를 드릴 수 있어요."}));return;}
-  if(!ss.length){body.replaceChildren(el("p",{class:"empty",text:"아직 심박이 들어간 존2 세션이 없어요. 종목에서 '존2 (UT2)'를 고르고 평균 심박과 함께 저장해 보세요."}));return;}
+  if(!a.maxHR||!ss.length){
+    const rs=recs.filter(r=>r.athleteId===a.id&&r.type==="ut2"&&r.rpe&&r.distance&&r.timeSec).sort((x,y)=>x.date.localeCompare(y.date)||x.createdAt-y.createdAt);
+    if(rs.length){body.replaceChildren(...rpeGuide(a,rs,recs,example));return;}
+    body.replaceChildren(el("p",{class:"empty",text:"종목에서 '존2 (UT2)'를 고르고 RPE(힘든 정도)나 평균 심박을 같이 저장하면 다음 세션 목표를 알려드려요. 심박계가 없으면 RPE만 넣어도 돼요."}));return;}
   const g=analyze(a,ss);const diff=g.next-Math.round(g.W);
   const kids=[];
   if(example)kids.push(el("div",{class:"banner"},el("b",{text:"예시"})," 선수의 존2 기록으로 보여주는 가이드예요."));
@@ -916,6 +924,32 @@ function renderGuide(){
       el("p",{class:"note",text:ys[0].toFixed(2)+" → "+ys[ys.length-1].toFixed(2)+(ys[ys.length-1]>=ys[0]?" · 같은 심박에서 더 큰 파워를 내고 있어요.":" · 효율이 떨어졌어요. 피로나 컨디션을 확인해 보세요.")})));
   }
   body.replaceChildren(...kids);
+}
+
+function rpeGuide(a,rs,recs,example){
+  const last=rs[rs.length-1],W=watts(last.timeSec,last.distance),sp=split(last.timeSec,last.distance);
+  let f,tone,label,why;
+  if(last.rpe>=6){f=.95;tone=1;label="너무 힘듦";why="RPE "+last.rpe+"은 존2가 아니라 더 높은 강도예요. 다음엔 파워를 낮춰서 문장으로 대화할 수 있는 정도(RPE 3–4)로 타세요.";}
+  else if(last.rpe===5){f=.98;tone=3;label="조금 힘듦";why="RPE 5면 존2 위쪽 끝이에요. 조금만 낮춰서 끝까지 편하게 유지해 보세요.";}
+  else if(last.rpe<=2){f=1.03;tone=5;label="너무 쉬움";why="RPE "+last.rpe+"면 여유가 많아요. 파워를 조금 올려도 존2 안이에요.";}
+  else if(last.rpe===3){f=1.02;tone=4;label="적정";why="RPE 3으로 편하게 탔어요. 아주 조금 올려볼 때예요.";}
+  else{f=1;tone=4;label="적정";why="RPE 4로 존2에 잘 맞췄어요. 같은 파워를 몇 번 더 유지하세요.";}
+  const e=eq2k(recs,a.id);let paceNote=null;
+  if(e){const lo=e.split+ZONES.UT2[1],hi=e.split+ZONES.UT2[2];
+    if(sp<lo-1){f=Math.min(f,1);paceNote="스플릿 "+fmtTime(sp)+"가 테스트 기록 기준 존2 페이스("+fmtTime(lo)+"–"+fmtTime(hi)+")보다 빨라요. 느낌이 편해도 더 올리지는 마세요.";}
+    else if(sp>hi+2&&last.rpe<=4)paceNote="테스트 기록 기준 존2 페이스는 "+fmtTime(lo)+"–"+fmtTime(hi)+"예요.";}
+  const next=Math.max(50,Math.round(W*f/5)*5),diff=next-Math.round(W);
+  const kids=[];
+  if(example)kids.push(el("div",{class:"banner"},el("b",{text:"예시"})," 선수의 존2 기록으로 보여주는 가이드예요."));
+  kids.push(el("div",{class:"verdict"},el("span",{class:"pill p"+tone,text:label}),el("p",{text:why})));
+  kids.push(el("div",{class:"target"},
+    el("div",null,el("small",{text:"목표 파워"}),el("strong",{class:"big",text:next+"W"}),el("em",{text:"지난번 "+Math.round(W)+"W ("+(diff>0?"+":"")+diff+"W)"})),
+    el("div",null,el("small",{text:"목표 스플릿 /500m"}),el("strong",{class:"big",text:fmtTime(splitFromW(next))}),el("em",{text:"지난번 "+fmtTime(sp)})),
+    el("div",null,el("small",{text:"목표 RPE"}),el("strong",{text:"3–4"}),el("em",{text:"문장으로 대화할 수 있는 정도"})),
+    el("div",null,el("small",{text:"레이트"}),el("strong",{text:"18–20"}),el("em",{text:"spm, 존2 일반 범위"}))));
+  if(paceNote)kids.push(el("p",{class:"note",text:paceNote}));
+  kids.push(el("p",{class:"note",text:"심박계 없이 RPE로 계산했어요. 운동 직후 10초 맥박 ×6 을 평균 심박 칸에 넣으면 더 정확해져요."}));
+  return kids;
 }
 
 // =============== 차트 ===============
@@ -988,8 +1022,10 @@ function renderPlans(){
               planSpec(p)?el("div",{class:"spec",text:planSpec(p)}):null),
             el("div",{class:"acts"},day>=t0&&p.type!=="free"?el("button",{class:"secondary",type:"button",onclick:()=>usePlan(p)},"이 훈련 기록하기"):null,
               !exampleP&&S.live&&S.role==="coach"?confirmBtn("삭제",()=>S.db.collection("plans").doc(p.id).delete()):null)),
-          p.type==="bike"?(hrTarget(p.zone||"UT2",selA)?el("div",{class:"mytarget"},(selA?selA.name:"")+" 목표 심박 ",el("b",{text:hrTarget(p.zone||"UT2",selA)+" bpm"})):null)
-            :tg?el("div",{class:"mytarget"},(selA?selA.name:"")+" 목표 ",el("b",{text:tg+" /500m"})):null,
+          p.zone&&ZONE_RPE[p.zone]?el("div",{class:"mytarget"},
+            p.type==="bike"?(hrTarget(p.zone,selA)?[(selA?selA.name:"")+" 목표 심박 ",el("b",{text:hrTarget(p.zone,selA)+" bpm"})," · "]:null)
+              :tg?[(selA?selA.name:"")+" 목표 ",el("b",{text:tg+" /500m"})," · "]:null,
+            "RPE ",el("b",{text:ZONE_RPE[p.zone]})):null,
           p.note?el("p",{class:"memo",text:p.note}):null,
           p.programName?el("p",{class:"note",text:p.programName+" · "+p.week+"주차"+(p.phase?" · "+p.phase:"")}):null,
           total&&day<=t0&&p.type!=="free"?el("div",{class:"field"},el("div",{class:"progress"},el("i",{style:"width:"+pct.toFixed(0)+"%"})),
@@ -1106,6 +1142,17 @@ function renderMe(){
   $("meVol").replaceChildren(mine.length?stackChart(groups,series):el("p",{class:"empty",text:"기록이 쌓이면 주별 훈련량이 보여요."}),
     mine.length?el("div",{class:"legend"},...series.map(s=>el("span",null,el("i",{style:"background:"+s.color}),s.name))):"",
     mine.length&&unit==="km"?el("p",{class:"note",text:"바이크·서킷·웨이트는 거리가 없어서 '시간 분'에서만 보여요. 동계에는 시간으로 보는 걸 추천해요."}):"");
+  // load (session RPE)
+  const lg=weeks.map(w=>({label:mmdd(w),v:{}}));let unk=0;
+  for(const r of mine){const i=weeks.indexOf(weekStart(r.date));if(i<0)continue;if(!r.rpe||!r.timeSec){unk++;continue;}lg[i].v.load=(lg[i].v.load||0)+r.rpe*r.timeSec/60;}
+  const lv=lg.map(g=>g.v.load||0);
+  if(lv.some(Boolean)){
+    const last=lv[6],prev=(lv[3]+lv[4]+lv[5])/3;let note=prev>0||last>0?"지난주 부하 "+Math.round(last)+".":"이번 주 부하 "+Math.round(lv[7])+". 몇 주 쌓이면 지난주와 비교해 드려요.";
+    if(prev>0&&last>prev*1.3)note+=" 직전 3주 평균보다 "+Math.round((last/prev-1)*100)+"% 많아요. 갑자기 늘리면 부상 위험이 커져요. 회복과 통증을 잘 살피세요.";
+    else if(prev>0&&last<prev*0.7)note+=" 직전 3주 평균보다 적어요. 회복 주간이었다면 괜찮아요.";
+    else if(prev>0)note+=" 직전 3주 평균과 비슷해요.";
+    $("meLoad").replaceChildren(stackChart(lg,[{key:"load",color:"var(--buoy)",name:"부하"}]),el("p",{class:"note",text:note+(unk?" RPE를 안 적은 세션 "+unk+"개는 빠졌어요.":"")}));
+  }else $("meLoad").replaceChildren(el("p",{class:"empty",text:"기록할 때 RPE를 적으면 주별 훈련 부하가 보여요. 심박계 없이도 훈련량과 강도를 같이 관리할 수 있어요."}));
   // weight
   const wts=mine.filter(r=>r.weight).sort((x,y)=>x.date.localeCompare(y.date)||x.createdAt-y.createdAt);
   const byDate={};wts.forEach(r=>byDate[r.date]=r.weight);const wd=Object.keys(byDate).sort().slice(-30);
