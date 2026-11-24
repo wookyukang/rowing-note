@@ -1298,7 +1298,8 @@ const dbErr=e=>({code:e&&(e.code==="42501"||/row-level security/i.test(e.message
 function makeDB(){
   const subs={},timers={};
   const fetchColl=async c=>{const {data,error}=await sb.from("docs").select("id,data,created_by").eq("team_id",TEAM.id).eq("collection",c).limit(10000);if(error)throw error;return data;};
-  const refresh=async c=>{const L=subs[c];if(!L||!L.size)return;try{const rows=await fetchColl(c);for(const l of L)l.deliver(rows);$("offlineBanner").hidden=true;}catch(e){$("offlineBanner").hidden=false;}};
+  const showErr=e=>{const b=$("offlineBanner");b.hidden=false;b.textContent="서버에서 데이터를 불러오지 못했어요."+(e&&e.message?" (오류: "+e.message+(e.code?" / "+e.code:"")+")":" 인터넷 연결을 확인해 주세요.");};
+  const refresh=async c=>{const L=subs[c];if(!L||!L.size)return;try{const rows=await fetchColl(c);for(const l of L)l.deliver(rows);$("offlineBanner").hidden=true;}catch(e){showErr(e);}};
   const soon=c=>{clearTimeout(timers[c]);timers[c]=setTimeout(()=>refresh(c),120);};
   sb.channel("docs-"+TEAM.id).on("postgres_changes",{event:"*",schema:"public",table:"docs",filter:"team_id=eq."+TEAM.id},p=>{
     const c=(p.new&&p.new.collection)||(p.old&&p.old.collection);if(c)soon(c);else Object.keys(subs).forEach(soon);}).subscribe();
@@ -1319,7 +1320,7 @@ function makeDB(){
         if(o.n)docs=docs.slice(0,o.n);
         next({docs,size:docs.length,empty:!docs.length,metadata:{fromCache:false,hasPendingWrites:false},docChanges:()=>[]});}};
       (subs[this.c]=subs[this.c]||new Set()).add(l);
-      fetchColl(this.c).then(l.deliver).catch(e=>{$("offlineBanner").hidden=false;err&&err(dbErr(e));});
+      fetchColl(this.c).then(l.deliver,e=>{showErr(e);err&&err(dbErr(e));});
       return ()=>subs[this.c].delete(l);}}
   return {collection:c=>new Q(c),doc:p=>{const [c,id]=p.split("/");return new Doc(c,id);}};
 }

@@ -133,6 +133,13 @@ language sql stable security definer set search_path = public as $$
   where m.user_id = auth.uid()
 $$;
 
+-- 테이블 사용 권한 (새 Supabase 프로젝트는 자동으로 주지 않는 경우가 있어요)
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.docs to authenticated;
+grant select on public.members to authenticated;
+revoke all on public.teams from anon, authenticated;
+revoke all on public.docs, public.members from anon;
+
 grant execute on function public.create_team(text, text) to authenticated;
 grant execute on function public.join_team(text, text) to authenticated;
 grant execute on function public.my_membership() to authenticated;
@@ -142,3 +149,6 @@ alter table public.docs replica identity full;
 do $$ begin
   alter publication supabase_realtime add table public.docs;
 exception when duplicate_object then null; end $$;
+
+-- 설정 변경을 API에 바로 반영
+notify pgrst, 'reload schema';
