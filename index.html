@@ -192,6 +192,16 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 .ath .meta{font:500 12px var(--f-mono);color:var(--muted)}
 .ath .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .ath .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fb{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.fb.new{border-color:var(--buoy);background:color-mix(in srgb,var(--buoy) 5%,var(--surface))}
+.fb .hd{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.fb .hd b{color:var(--ink);font-size:14px}
+.fb .rec{font:500 12px var(--f-mono);color:var(--lake)}
+.fb .tx{margin:0;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.fb .rp{margin:0;font-size:14px;border-left:3px solid var(--lake);padding:4px 10px;background:var(--lake-soft);border-radius:0 8px 8px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.fb .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+textarea{resize:vertical;line-height:1.5}
+.tabs .dot{display:inline-block;min-width:18px;padding:0 5px;margin-left:4px;border-radius:9px;background:var(--buoy);color:#fff;font:700 11px/18px var(--f-text);vertical-align:1px}
 .weeknav{display:flex;align-items:center;gap:8px}
 .weeknav .secondary{padding:5px 10px}
 .weeknav b{font-family:var(--f-mono);font-size:14px;white-space:nowrap}
@@ -283,6 +293,10 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 
   <!-- 기록하기 -->
   <div id="view-log" class="stack">
+    <section class="panel" id="fbInbox" hidden>
+      <div class="head-row"><h2>코치 피드백</h2><span class="pill p3" id="fbInboxCount"></span></div>
+      <div class="stack" id="fbInboxList" style="gap:10px"></div>
+    </section>
     <section class="panel">
       <h2>오늘 훈련 기록</h2>
       <p class="sub">모니터에 뜬 숫자만 옮겨 적으면 스플릿과 와트는 자동으로 계산돼요.</p>
@@ -450,6 +464,10 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
       <div id="meVol"></div>
     </section>
     <section class="panel">
+      <div class="head-row"><h2>코치 피드백</h2><span class="lbl" id="meFbCount"></span></div>
+      <div class="stack" id="meFb" style="gap:10px"></div>
+    </section>
+    <section class="panel">
       <div class="head-row"><h2>훈련 부하</h2><span class="lbl">RPE × 운동 시간(분)</span></div>
       <div id="meLoad"></div>
     </section>
@@ -461,6 +479,20 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 
   <!-- 팀 보드 -->
   <div id="view-board" class="stack" hidden>
+    <section class="panel" id="fbPanel" hidden>
+      <h2>피드백 남기기</h2>
+      <p class="sub">선수에게 오늘 훈련 피드백을 남겨요. 그 선수와 코치만 볼 수 있어요. 아래 기록 표의 '피드백' 버튼으로도 열 수 있어요.</p>
+      <div class="row2">
+        <div class="field"><label class="lbl" for="fbAthlete">선수</label><select id="fbAthlete"></select></div>
+        <div class="field"><label class="lbl" for="fbRecord">연결할 기록 (선택)</label><select id="fbRecord"></select></div>
+      </div>
+      <div class="field"><label class="lbl" for="fbText">피드백</label><textarea id="fbText" rows="3" maxlength="600" placeholder="예: 후반 레이트가 떨어졌어. 다음엔 마지막 2km 레이트 20 유지해보자. 캐치 때 상체 먼저 나가는 거 조심!"></textarea></div>
+      <div class="chips sm" id="fbQuick"></div>
+      <button class="primary" id="fbSend" type="button">피드백 보내기</button>
+      <p class="msg" id="fbMsg"></p>
+      <div class="head-row"><h3 style="font-size:15px">최근 보낸 피드백</h3><span class="lbl" id="fbSentCount"></span></div>
+      <div class="stack" id="fbSent" style="gap:10px"></div>
+    </section>
     <section class="panel">
       <div class="head-row"><h2>통증 알림</h2><span class="lbl">최근 3일</span></div>
       <ul class="alerts" id="alerts"></ul>
@@ -480,7 +512,7 @@ td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
       </div>
       <div class="chips sm" id="filter"></div>
       <div class="tablebox"><table class="wide">
-        <thead><tr><th>날짜</th><th>선수</th><th>종목</th><th>거리</th><th>시간</th><th>/500m</th><th>W</th><th>SPM</th><th>심박</th><th>컨디션</th><th></th></tr></thead>
+        <thead><tr><th>날짜</th><th>선수</th><th>종목</th><th>거리</th><th>시간</th><th>/500m</th><th>W</th><th>SPM</th><th>심박</th><th>컨디션</th><th></th><th></th></tr></thead>
         <tbody id="tbody"></tbody>
       </table></div>
     </section>
@@ -1168,6 +1200,7 @@ function renderMe(){
   $("meVol").replaceChildren(mine.length?stackChart(groups,series):el("p",{class:"empty",text:"기록이 쌓이면 주별 훈련량이 보여요."}),
     mine.length?el("div",{class:"legend"},...series.map(s=>el("span",null,el("i",{style:"background:"+s.color}),s.name))):"",
     mine.length&&unit==="km"?el("p",{class:"note",text:"바이크·서킷·웨이트는 거리가 없어서 '시간 분'에서만 보여요. 동계에는 시간으로 보는 걸 추천해요."}):"");
+  renderMeFeedback(a);
   // load (session RPE)
   const lg=weeks.map(w=>({label:mmdd(w),v:{}}));let unk=0;
   for(const r of mine){const i=weeks.indexOf(weekStart(r.date));if(i<0)continue;if(!r.rpe||!r.timeSec){unk++;continue;}lg[i].v.load=(lg[i].v.load||0)+r.rpe*r.timeSec/60;}
@@ -1230,8 +1263,9 @@ function renderBoard(){
       el("td",{class:"m",text:r.distance||"-"}),el("td",{class:"m",text:fmtTime(r.timeSec)}),el("td",{class:"m",text:r.type==="bike"||!r.distance?"-":fmtTime(split(r.timeSec,r.distance))}),
       el("td",{class:"m",text:r.type==="bike"?(r.power||"-"):r.type==="water"||!r.distance?"-":Math.round(watts(r.timeSec,r.distance))}),el("td",{class:"m",text:r.rpe?"RPE "+r.rpe:r.rate||"-"}),el("td",{class:"m",text:r.hr||"-"}),
       el("td",null,el("span",{class:"pill p"+(r.feel||0),text:FEEL_LABEL[r.feel||0]})),
-      el("td",null,S.demo||!(S.role==="coach"||r.by===S.me)?null:confirmBtn("삭제",()=>S.db.collection("records").doc(r.id).delete()))))
-    :[el("tr",null,el("td",{colspan:"11",class:"empty",text:"기록이 없어요."}))]));
+      el("td",null,S.demo||!(S.role==="coach"||r.by===S.me)?null:confirmBtn("삭제",()=>S.db.collection("records").doc(r.id).delete())),
+      el("td",null,!S.demo&&S.role==="coach"?el("button",{class:"del",type:"button",style:"color:var(--lake)",onclick:()=>openFeedback(r.athleteId,r.id)},"피드백"+(fbCountFor(r.id)?" ("+fbCountFor(r.id)+")":"")):null)))
+    :[el("tr",null,el("td",{colspan:"12",class:"empty",text:"기록이 없어요."}))]));
 }
 async function exportCsv(){
   if(S.demo)return;
@@ -1309,6 +1343,87 @@ async function saveSeat(){
   const m=Number(String($("srMargin").value).replace(",","."));
   try{await S.db.collection("seatraces").doc().set({date:today(),a,b,winner:w,margin:m>0?Math.round(m*10)/10:null,createdAt:Date.now(),by:S.me||null});$("srMargin").value="";msg("srMsg","저장했어요.","ok");}
   catch(e){msg("srMsg",errText(e),"err");}
+}
+
+// =============== 코치 피드백 ===============
+const FB_QUICK=["좋았어, 이대로 유지!","후반에 레이트 떨어졌어. 다음엔 끝까지 유지해보자.","존2인데 너무 세게 탔어. 다음엔 편하게.","자세 좋아졌어. 캐치 타이밍 계속 신경 쓰자.","오늘 무리하지 말고 회복에 집중해."];
+function recSummary(r){if(!r)return "";const parts=[mmdd(r.date),typeLabel(r)];
+  if(r.distance)parts.push(r.distance+"m");
+  if(r.distance&&r.timeSec&&r.type!=="bike")parts.push(fmtTime(split(r.timeSec,r.distance))+"/500m");else if(r.timeSec)parts.push(fmtTime(r.timeSec,0));
+  if(r.rpe)parts.push("RPE "+r.rpe);return parts.join(" · ");}
+const fbCountFor=rid=>(S.feedback||[]).filter(f=>f.recordId===rid).length;
+function myAthleteIds(){return S.athletes.concat(S.allAthletes||[]).filter(a=>a.userId===S.me).map(a=>a.id);}
+function fbCard(f,mode){
+  const unread=!f.readAt;
+  const card=el("div",{class:"fb"+(mode==="inbox"&&unread?" new":"")},
+    el("div",{class:"hd"},el("span",null,el("b",{text:mode==="sent"?"→ "+(nameOf(f)||"선수"):(f.fromName||"코치")}),"  "+mmdd(f.date)),
+      el("span",{class:"pill "+(f.readAt?"p4":"p3"),text:f.readAt?"확인함":"안 읽음"})),
+    f.recordSummary?el("div",{class:"rec",text:f.recordSummary}):null,
+    el("p",{class:"tx",text:f.text}),
+    f.reply?el("p",{class:"rp",text:(mode==="sent"?"선수 답장: ":"내 답장: ")+f.reply}):null);
+  const mine=f.athleteUserId&&f.athleteUserId===S.me;
+  if(mine&&(mode==="inbox"||mode==="history")){
+    const acts=el("div",{class:"acts"});
+    if(unread)acts.append(el("button",{class:"secondary",type:"button",onclick:()=>fbUpdate(f,{readAt:Date.now()})},"확인했어요"));
+    if(!f.reply){const inp=el("input",{placeholder:"답장 (선택)",maxlength:"300",style:"flex:1;min-width:140px"});
+      acts.append(inp,el("button",{class:"secondary",type:"button",onclick:()=>{const t=inp.value.trim();if(t)fbUpdate(f,{reply:t,replyAt:Date.now(),readAt:f.readAt||Date.now()});}},"답장"));}
+    card.append(acts);
+  }
+  if(mode==="sent"&&S.role==="coach")card.append(el("div",{class:"acts"},confirmBtn("삭제",()=>S.db.collection("feedback").doc(f.id).delete())));
+  return card;
+}
+async function fbUpdate(f,patch){try{await S.db.collection("feedback").doc(f.id).update(patch);}catch(e){alertMsg(errText(e));}}
+function alertMsg(t){msg("msg",t,"err");}
+function renderInbox(){
+  const box=$("fbInbox");
+  if(!S.live||S.role==="coach"){box.hidden=true;setTabDot(0);return;}
+  const mine=(S.feedback||[]).filter(f=>f.athleteUserId===S.me);
+  const unread=mine.filter(f=>!f.readAt);
+  setTabDot(unread.length);
+  const show=unread.length?unread:mine.filter(f=>f.date>=dayOff(-1)).slice(0,2);
+  box.hidden=!show.length;
+  $("fbInboxCount").textContent=unread.length?"새 피드백 "+unread.length:"";$("fbInboxCount").hidden=!unread.length;
+  $("fbInboxList").replaceChildren(...show.map(f=>fbCard(f,"inbox")));
+}
+function setTabDot(n){const b=document.querySelector('#tabs button[data-tab="log"]');b.replaceChildren("기록하기",n?el("span",{class:"dot",text:n}):"");}
+function renderFbPanel(){
+  const panel=$("fbPanel");panel.hidden=!(S.live&&S.role==="coach");if(panel.hidden)return;
+  const sel=$("fbAthlete"),cur=sel.value;
+  sel.replaceChildren(el("option",{value:"",text:"선수 선택"}),...S.athletes.map(a=>el("option",{value:a.id,text:a.name+(a.userId?"":" (앱 미가입)")})));
+  if(cur&&S.athletes.some(a=>a.id===cur))sel.value=cur;
+  fillFbRecords();
+  $("fbQuick").replaceChildren(...FB_QUICK.map(q=>el("button",{class:"chip",type:"button",onclick:()=>{const t=$("fbText");t.value=t.value?t.value.trim()+" "+q:q;t.focus();}},q.length>14?q.slice(0,14)+"…":q)));
+  const sent=(S.feedback||[]).slice().sort((a,b)=>b.createdAt-a.createdAt);
+  $("fbSentCount").textContent=sent.length?"안 읽음 "+sent.filter(f=>!f.readAt&&f.athleteUserId).length+"개":"";
+  $("fbSent").replaceChildren(...(sent.length?sent.slice(0,15).map(f=>fbCard(f,"sent")):[el("p",{class:"empty",text:"아직 보낸 피드백이 없어요."})]));
+}
+function fillFbRecords(keep){
+  const aid=$("fbAthlete").value,rs=$("fbRecord"),cur=keep||rs.value;
+  const recs=S.records.filter(r=>r.athleteId===aid).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,15);
+  rs.replaceChildren(el("option",{value:"",text:aid?"연결 안 함":"선수를 먼저 고르세요"}),...recs.map(r=>el("option",{value:r.id,text:recSummary(r)})));
+  if(cur&&recs.some(r=>r.id===cur))rs.value=cur;
+}
+function openFeedback(aid,rid){
+  $("fbAthlete").value=aid;fillFbRecords(rid);$("fbRecord").value=rid||"";
+  $("fbPanel").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("fbText").focus(),300);
+}
+async function sendFeedback(){
+  const a=S.athletes.find(x=>x.id===$("fbAthlete").value),text=$("fbText").value.trim();
+  if(!a){msg("fbMsg","선수를 골라주세요.","err");return;}
+  if(!text){msg("fbMsg","피드백 내용을 입력해 주세요.","err");return;}
+  const r=S.records.find(x=>x.id===$("fbRecord").value);
+  $("fbSend").disabled=true;
+  try{await S.db.collection("feedback").doc().set({athleteId:a.id,athleteName:a.name,athleteUserId:a.userId||null,recordId:r?r.id:null,recordSummary:r?recSummary(r):null,
+      date:today(),text,fromName:S.myName||"코치",createdAt:Date.now(),readAt:null,reply:null,by:S.me});
+    $("fbText").value="";msg("fbMsg",a.name+"에게 보냈어요."+(a.userId?"":" 이 선수는 앱에 가입하지 않아서 코치만 볼 수 있어요."),"ok");}
+  catch(e){msg("fbMsg",errText(e)+(e&&/check constraint|docs_collection_check/i.test(e.message||"")?" Supabase에서 02_feedback.sql 을 실행해 주세요.":""),"err");}
+  $("fbSend").disabled=false;
+}
+function renderMeFeedback(a){
+  const list=a?(S.feedback||[]).filter(f=>f.athleteId===a.id).sort((x,y)=>y.createdAt-x.createdAt):[];
+  $("meFbCount").textContent=list.length?list.length+"개":"";
+  $("meFb").replaceChildren(...(S.demo&&!list.length?[el("p",{class:"empty",text:"코치가 남긴 피드백이 여기에 쌓여요."})]
+    :list.length?list.slice(0,30).map(f=>fbCard(f,"history")):[el("p",{class:"empty",text:"아직 받은 피드백이 없어요."})]));
 }
 
 // =============== 선수 관리 ===============
@@ -1398,7 +1513,7 @@ function setTab(t){
 function renderTab(){
   if(S.tab==="plan")renderPlans();
   else if(S.tab==="me")renderMe();
-  else if(S.tab==="board")renderBoard();
+  else if(S.tab==="board"){renderFbPanel();renderBoard();}
   else if(S.tab==="crew"){renderCrew();renderSeat();}
   else if(S.tab==="manage")renderManage();
 }
@@ -1521,6 +1636,7 @@ async function doSignup(){
       const {data,error}=await sb.auth.signUp({email:toEmail(id),password:pw});
       if(error){authMsg(/registered|exists/i.test(error.message)?"이미 있는 아이디예요. 다른 아이디를 써주세요.":"가입하지 못했어요: "+error.message,"err");return;}
       if(!data.session){authMsg("관리자 설정이 필요해요: Supabase에서 이메일 확인(Confirm email)을 꺼주세요.","err");return;}
+      S.me=(data.user&&data.user.id)||(data.session.user&&data.session.user.id)||null;
     }
     const r=suMode==="create"?await sb.rpc("create_team",{p_team:team,p_name:name}):await sb.rpc("join_team",{p_code:code,p_name:name});
     if(r.error){authMsg(r.error.message.replace(/^.*?:\s*/,"")||"팀 가입에 실패했어요.","err");needTeamOnly=true;showAuth("join");return;}
@@ -1541,6 +1657,7 @@ let started=false;
 function startApp(m){
   if(started)return;started=true;
   TEAM=m.team;S.role=m.role;S.myName=m.name;
+  if(!S.me)sb.auth.getUser().then(r=>{S.me=r.data&&r.data.user&&r.data.user.id;renderAthletes();refreshMode();renderInbox();});
   document.body.classList.remove("locked");$("authBox").hidden=true;$("teambar").hidden=false;
   $("tbTeam").textContent=TEAM.name;$("tbMe").textContent=m.name+" ("+(m.role==="coach"?"코치":"선수")+")";
   const codes=[];
@@ -1565,6 +1682,8 @@ function startApp(m){
     refreshMode();
   },()=>{clearTimeout(loading);msg("msg","팀 기록을 불러오지 못했어요.","err");});
   db.collection("plans").orderBy("date","desc").limit(2000).onSnapshot(s=>{S.plans=s.docs.map(d=>({id:d.id,...d.data()}));refreshMode();},()=>{});
+  db.collection("feedback").orderBy("createdAt","desc").limit(500).onSnapshot(s=>{S.feedback=s.docs.map(d=>({id:d.id,...d.data()}));renderInbox();
+    if(S.tab==="board"){renderFbPanel();renderBoard();}else if(S.tab==="me")renderMe();},()=>{});
   db.collection("seatraces").orderBy("createdAt","desc").limit(500).onSnapshot(s=>{S.seatraces=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==="crew")renderSeat();},()=>{});
   refreshMode();preview();
 }
@@ -1572,6 +1691,7 @@ document.querySelectorAll("#authTabs button").forEach(b=>b.onclick=()=>{authMsg(
 document.querySelectorAll("#suMode button").forEach(b=>b.onclick=()=>setSuMode(b.dataset.v));
 $("liBtn").onclick=doLogin;$("liPw").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 $("suBtn").onclick=doSignup;
+$("fbSend").onclick=sendFeedback;$("fbAthlete").addEventListener("change",()=>fillFbRecords());
 $("logoutBtn").onclick=async()=>{try{await sb.auth.signOut();}catch(e){}location.reload();};
 
 (async()=>{

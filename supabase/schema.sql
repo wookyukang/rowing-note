@@ -26,7 +26,7 @@ create table if not exists public.members (
 create table if not exists public.docs (
   id          uuid primary key default gen_random_uuid(),
   team_id     uuid not null references public.teams on delete cascade,
-  collection  text not null check (collection in ('athletes', 'records', 'plans', 'seatraces')),
+  collection  text not null check (collection in ('athletes', 'records', 'plans', 'seatraces', 'feedback')),
   data        jsonb not null default '{}'::jsonb,
   created_by  uuid default auth.uid(),
   created_at  timestamptz not null default now()
@@ -54,7 +54,13 @@ drop policy if exists members_select on public.members;
 create policy members_select on public.members for select using (team_id = public.my_team());
 
 drop policy if exists docs_select on public.docs;
-create policy docs_select on public.docs for select using (team_id = public.my_team());
+create policy docs_select on public.docs for select using (
+  team_id = public.my_team() and (
+    collection <> 'feedback'
+    or public.is_coach(team_id)
+    or data->>'athleteUserId' = auth.uid()::text
+  )
+);
 
 -- 기록·시트레이스는 팀원 누구나, 선수 명단·훈련 계획은 코치만 추가
 drop policy if exists docs_insert on public.docs;
@@ -71,6 +77,7 @@ create policy docs_update on public.docs for update using (
     public.is_coach(team_id)
     or (collection in ('records', 'seatraces') and created_by = auth.uid())
     or (collection = 'athletes' and data->>'userId' = auth.uid()::text)
+    or (collection = 'feedback' and data->>'athleteUserId' = auth.uid()::text)
   )
 ) with check (team_id = public.my_team());
 
