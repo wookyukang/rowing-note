@@ -1,0 +1,15 @@
+{
+  "name": "로잉노트",
+  "short_name": "로잉노트",
+  "description": "조정팀 에르고·수상 기록, 훈련 계획, 크루 구성",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#eef3f4",
+  "theme_color": "#0e5e6f",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

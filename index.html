@@ -1,0 +1,1440 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e5e6f">
+<meta name="description" content="조정팀 에르고·수상 기록, 훈련 계획, 크루 구성">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="로잉노트">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>로잉노트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow column like a phone logbook; five tabs; splits shown in PM5-monitor mono */
+:root{
+  --bg:#eef3f4; --surface:#ffffff; --ink:#0f2a33; --muted:#5b7179; --line:#d3dfe2;
+  --lake:#0e5e6f; --lake-soft:#dcecef; --buoy:#e2571e; --buoy-soft:#fde6dc; --reed:#7a9a3a;
+  --good:#1f8a4c; --warn:#b7791f; --bad:#c2412d;
+  --lcd:#d7e4c6; --lcd-ink:#20301a; --on-lake:#ffffff;
+  --f-text:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0a1a1f; --surface:#10262d; --ink:#e3eef0; --muted:#93a9af; --line:#21404a;
+  --lake:#5fb7c9; --lake-soft:#163a43; --buoy:#ff7a45; --buoy-soft:#3a2218; --reed:#a6c75f;
+  --good:#4cc07e; --warn:#e0a84a; --bad:#ef6f5a; --lcd:#1d2b17; --lcd-ink:#cfe6b0; --on-lake:#06181d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1a1f; --surface:#10262d; --ink:#e3eef0; --muted:#93a9af; --line:#21404a;
+  --lake:#5fb7c9; --lake-soft:#163a43; --buoy:#ff7a45; --buoy-soft:#3a2218; --reed:#a6c75f;
+  --good:#4cc07e; --warn:#e0a84a; --bad:#ef6f5a; --lcd:#1d2b17; --lcd-ink:#cfe6b0; --on-lake:#06181d; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+body.locked #tabs,body.locked [id^="view-"],body.locked .banner,body.locked #teambar{display:none!important}
+.teambar{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:13px}
+.teambar b{font-size:15px}
+.teambar .codes{display:flex;gap:8px;flex-wrap:wrap}
+.code{font:600 13px var(--f-mono);background:var(--lake-soft);color:var(--lake);border:0;border-radius:8px;padding:4px 8px;cursor:pointer}
+.auth h2{font-size:19px}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-text);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.25}
+.brand h1{font-size:26px;font-weight:700;letter-spacing:-.01em}
+.brand h1 span{color:var(--buoy)}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.lanes{height:6px;border-radius:3px;background:repeating-linear-gradient(90deg,var(--buoy) 0 10px,transparent 10px 22px);opacity:.55}
+
+.tabs{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1 0 auto;border:0;background:transparent;color:var(--muted);font:600 14px var(--f-text);padding:10px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--lake);color:var(--on-lake)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--buoy);outline-offset:2px}
+
+.banner{background:var(--buoy-soft);border:1px solid var(--buoy);color:var(--ink);border-radius:10px;padding:10px 12px;font-size:13px}
+.banner b{color:var(--buoy)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel h2{font-size:17px}
+.sub{color:var(--muted);font-size:13px;margin:-8px 0 0}
+.lbl{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+input,select,textarea{font:500 16px var(--f-text);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
+input.mono{font-family:var(--f-mono)}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:460px){.row{grid-template-columns:1fr 1fr}.row>.field:last-child:nth-child(odd){grid-column:1/-1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 14px var(--f-text);padding:8px 14px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--lake-soft);border-color:var(--lake);color:var(--lake)}
+.chips.sm .chip{padding:5px 11px;font-size:13px}
+.athlete-row{display:flex;gap:8px}
+.athlete-row select{flex:1}
+.ghost{border:1px dashed var(--line);background:transparent;color:var(--lake);font:600 14px var(--f-text);padding:0 14px;border-radius:10px;cursor:pointer;white-space:nowrap}
+.add-row{display:flex;gap:8px}
+.add-row>input,.add-row>select{flex:1}
+.secondary{border:1px solid var(--lake);background:transparent;color:var(--lake);font:600 13px var(--f-text);padding:8px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.secondary:disabled{opacity:.5;cursor:not-allowed}
+.primary{border:0;background:var(--buoy);color:#fff;font:700 16px var(--f-text);padding:14px;border-radius:12px;cursor:pointer}
+.primary:disabled{opacity:.45;cursor:not-allowed}
+.linkbtn{border:0;background:none;color:var(--lake);font:600 13px var(--f-text);text-decoration:underline;cursor:pointer;padding:0}
+.msg{font-size:13px;min-height:1.2em;margin:-4px 0 0}
+.msg.ok{color:var(--good)} .msg.err{color:var(--bad)}
+.head-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.empty{color:var(--muted);font-size:14px;padding:4px 0;margin:0}
+.note{font-size:12px;color:var(--muted);margin:0}
+.hint{font-size:13px;color:var(--muted);margin:-4px 0 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hint b{color:var(--lake);font-family:var(--f-mono)}
+
+.photo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px dashed var(--lake);border-radius:12px;padding:10px 12px;background:var(--lake-soft)}
+.photo p{margin:0;font-size:13px;color:var(--muted);flex:1;min-width:160px}
+.plan-tag{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--lake-soft);border-radius:10px;padding:8px 12px;font-size:13px}
+.plan-tag b{color:var(--lake)}
+
+.lcd{background:var(--lcd);color:var(--lcd-ink);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-family:var(--f-mono)}
+.lcd div{display:flex;flex-direction:column;min-width:0}
+.lcd small{font-size:10px;letter-spacing:.08em;opacity:.75;font-family:var(--f-text);font-weight:600}
+.lcd strong{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.feel{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.feel button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 2px;cursor:pointer;font:600 13px var(--f-text);display:flex;flex-direction:column;align-items:center;gap:2px}
+.feel button b{font:600 18px var(--f-mono)}
+.feel button[aria-pressed="true"]{border-color:var(--buoy);background:var(--buoy-soft);color:var(--buoy)}
+.pain .chip[aria-pressed="true"]{background:color-mix(in srgb,var(--bad) 14%,transparent);border-color:var(--bad);color:var(--bad)}
+
+.tipwrap{position:relative}
+.lblrow{display:flex;align-items:center;gap:6px}
+.q{width:18px;height:18px;border-radius:50%;border:1px solid var(--lake);background:var(--surface);color:var(--lake);font:700 11px var(--f-text);line-height:1;padding:0;cursor:help;display:inline-flex;align-items:center;justify-content:center}
+.tip{display:none;position:absolute;top:24px;right:0;z-index:5;width:min(280px,calc(100vw - 48px));background:var(--ink);color:var(--bg);font:400 13px/1.55 var(--f-text);padding:12px 14px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+.tip b{color:var(--bg)}
+.q:hover+.tip,.q:focus+.tip,.tip:hover{display:block}
+
+.pill{font:600 12px var(--f-text);padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-block}
+.p1,.p2{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.p3{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.p4,.p5{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}
+.p0{background:var(--lake-soft);color:var(--muted)}
+
+.target{border:1px solid var(--lake);background:var(--lake-soft);border-radius:12px;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+.target div{display:flex;flex-direction:column;min-width:0}
+.target small{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted)}
+.target strong{font:600 22px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.target strong.big{color:var(--lake);font-size:28px}
+.target em{font-style:normal;font-size:12px;color:var(--muted)}
+.verdict{display:flex;gap:10px;align-items:flex-start}
+.verdict p{margin:0;font-size:14px}
+.facts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.gbody{display:flex;flex-direction:column;gap:12px}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+svg.chart text{font:500 10px var(--f-mono);fill:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rank li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center}
+.rank .pos{font:600 15px var(--f-mono);color:var(--muted);text-align:center}
+.rank li:first-child .pos{color:var(--buoy)}
+.rank .who{min-width:0;display:flex;flex-direction:column;gap:4px}
+.rank .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:6px;background:var(--lake-soft);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--lake);border-radius:3px}
+.rank .num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;line-height:1.3}
+.rank .num b{font-size:16px}
+.rank .num small{display:block;color:var(--muted);font-size:11px}
+
+.cond{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.cond div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;gap:6px;min-width:0}
+.cond span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alerts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.alerts li{border-left:3px solid var(--bad);background:color-mix(in srgb,var(--bad) 7%,transparent);border-radius:0 10px 10px 0;padding:8px 12px;font-size:14px}
+.alerts small{color:var(--muted);font-family:var(--f-mono);margin-left:6px}
+
+.tablebox{overflow-x:auto;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table.wide{min-width:560px}
+th{text-align:left;font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.m{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.del{border:0;background:transparent;color:var(--muted);cursor:pointer;font:500 12px var(--f-text);padding:4px 6px;border-radius:6px}
+.del.confirm{color:#fff;background:var(--bad)}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;min-width:0}
+.stat small{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.stat strong{font:600 20px var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat em{font-style:normal;font-size:11px;color:var(--muted)}
+@media (max-width:460px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
+
+.day{display:flex;flex-direction:column;gap:8px}
+.day h3{font-size:14px;color:var(--muted);font-weight:600}
+.day h3 b{color:var(--ink)}
+.plan{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.plan .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.plan .t{font-weight:700}
+.plan .t span{color:var(--muted);font-weight:600;margin-right:6px}
+.plan .spec{font-family:var(--f-mono);font-size:13px;color:var(--lake)}
+.plan .memo{font-size:13px;color:var(--muted);margin:0}
+.plan .done{font-size:12px;color:var(--muted)}
+.plan .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer}
+.chk input{width:18px;height:18px;padding:0;accent-color:var(--lake)}
+.weeknav{display:flex;align-items:center;gap:8px}
+.weeknav .secondary{padding:5px 10px}
+.weeknav b{font-family:var(--f-mono);font-size:14px;white-space:nowrap}
+.zone{font:700 11px var(--f-mono);padding:2px 7px;border-radius:6px;background:var(--lake);color:var(--on-lake);margin-right:6px;vertical-align:1px}
+.zone.AT,.zone.TR{background:var(--warn);color:#fff}
+.zone.AN{background:var(--bad);color:#fff}
+.mytarget{font-size:13px;background:var(--lake-soft);border-radius:8px;padding:6px 10px}
+.mytarget b{font-family:var(--f-mono);color:var(--lake)}
+.prog-item{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;flex-wrap:wrap}
+.prog-item small{display:block;color:var(--muted);font-family:var(--f-mono)}
+.progress{height:5px;background:var(--lake-soft);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--good)}
+
+.crew-list{display:flex;flex-direction:column;gap:6px}
+.crew-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0}
+.crew-row .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crew-row .nm small{display:block;font:500 12px var(--f-mono);color:var(--muted)}
+.seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:var(--bg);color:var(--muted);font:700 13px var(--f-mono);width:36px;padding:7px 0;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"].a{background:var(--lake);color:var(--on-lake)}
+.seg button[aria-pressed="true"].b{background:var(--buoy);color:#fff}
+.seg button[aria-pressed="true"].x{background:var(--lake-soft);color:var(--ink)}
+.boats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.boat{border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.boat.a{background:var(--lake-soft);border:1px solid var(--lake)}
+.boat.b{background:var(--buoy-soft);border:1px solid var(--buoy)}
+.boat h3{font-size:15px}
+.boat .big{font:600 22px var(--f-mono);font-variant-numeric:tabular-nums}
+.boat small{font-size:12px;color:var(--muted)}
+.boat ol{margin:4px 0 0;padding-left:18px;font-size:13px}
+.verdictbar{border-radius:10px;background:var(--bg);padding:10px 12px;font-size:14px}
+@media (max-width:420px){.boats{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:no-preference){.bar i,.progress i{transition:width .4s ease}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="brand">
+    <h1>로잉<span>노트</span></h1>
+    <p>조정팀 에르고·수상 기록, 훈련 계획, 크루 구성을 한 곳에서.</p>
+  </header>
+  <div class="lanes" aria-hidden="true"></div>
+
+  <section class="panel auth" id="authBox" hidden>
+    <div class="tabs" id="authTabs" role="tablist">
+      <button type="button" data-m="login" aria-selected="true">로그인</button>
+      <button type="button" data-m="signup" aria-selected="false">처음이에요 (가입)</button>
+    </div>
+    <div class="stack" id="authLogin" style="gap:10px">
+      <div class="field"><label class="lbl" for="liId">아이디</label><input id="liId" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+      <div class="field"><label class="lbl" for="liPw">비밀번호</label><input id="liPw" type="password" autocomplete="current-password"></div>
+      <button class="primary" id="liBtn" type="button">로그인</button>
+    </div>
+    <div class="stack" id="authSignup" hidden style="gap:10px">
+      <div class="chips" id="suMode">
+        <button class="chip" type="button" data-v="join" aria-pressed="true">팀 코드로 가입</button>
+        <button class="chip" type="button" data-v="create" aria-pressed="false">새 팀 만들기 (코치)</button>
+      </div>
+      <p class="note" id="suModeNote">코치님께 받은 6자리 팀 코드를 넣어주세요. 선수 코드로 가입하면 선수, 코치 코드로 가입하면 코치가 돼요.</p>
+      <div class="field suAcct"><label class="lbl" for="suId">아이디 (영문 소문자·숫자 3–20자)</label><input id="suId" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="예: kimrow12"></div>
+      <div class="field suAcct"><label class="lbl" for="suPw">비밀번호 (6자 이상)</label><input id="suPw" type="password" autocomplete="new-password"></div>
+      <div class="field"><label class="lbl" for="suName">이름</label><input id="suName" maxlength="20" placeholder="예: 김조정"></div>
+      <div class="field" id="suCodeBox"><label class="lbl" for="suCode">팀 코드</label><input id="suCode" class="mono" maxlength="6" autocapitalize="characters" placeholder="ABC123"></div>
+      <div class="field" id="suTeamBox" hidden><label class="lbl" for="suTeam">팀 이름</label><input id="suTeam" maxlength="30" placeholder="예: 한강고 조정부"></div>
+      <button class="primary" id="suBtn" type="button">가입하기</button>
+    </div>
+    <p class="msg" id="authMsg"></p>
+  </section>
+
+  <div class="teambar" id="teambar" hidden>
+    <div><b id="tbTeam"></b> · <span id="tbMe"></span></div>
+    <div class="codes" id="tbCodes"></div>
+    <button class="linkbtn" id="logoutBtn" type="button">로그아웃</button>
+  </div>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="log" aria-selected="true">기록하기</button>
+    <button role="tab" data-tab="plan" aria-selected="false">훈련 계획</button>
+    <button role="tab" data-tab="me" aria-selected="false">내 기록</button>
+    <button role="tab" data-tab="board" aria-selected="false">팀 보드</button>
+    <button role="tab" data-tab="crew" aria-selected="false">크루 구성</button>
+  </nav>
+
+  <div class="banner" id="demoBanner" hidden><b>예시 데이터</b>로 보여주는 중이에요. 우리 팀 첫 기록이 저장되면 예시는 사라져요.</div>
+  <div class="banner" id="offlineBanner" hidden>서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요. 지금은 예시만 볼 수 있어요.</div>
+
+  <!-- 기록하기 -->
+  <div id="view-log" class="stack">
+    <section class="panel">
+      <h2>오늘 훈련 기록</h2>
+      <p class="sub">모니터에 뜬 숫자만 옮겨 적으면 스플릿과 와트는 자동으로 계산돼요.</p>
+
+      <div class="field" id="todayPlansBox" hidden>
+        <span class="lbl">오늘 계획된 훈련 (누르면 자동으로 채워져요)</span>
+        <div class="chips sm" id="todayPlans"></div>
+      </div>
+      <div class="plan-tag" id="planTag" hidden><span>연결된 계획: <b id="planTagText"></b></span><button class="linkbtn" id="planUnlink" type="button">연결 해제</button></div>
+
+      <div class="field">
+        <span class="lbl">선수</span>
+        <div class="athlete-row">
+          <select id="athlete" aria-label="선수 선택"></select>
+          <button class="ghost" id="addAthleteBtn" type="button">+ 선수 추가</button>
+        </div>
+        <div class="add-row" id="addRow" hidden>
+          <input id="newName" placeholder="이름 (예: 김조정)" maxlength="20">
+          <button class="secondary" id="saveAthlete" type="button">추가</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="lbl">종목</span>
+        <div class="chips" id="types"></div>
+      </div>
+
+      <div class="field" id="boatBox" hidden>
+        <label class="lbl" for="boat">보트</label>
+        <select id="boat"></select>
+      </div>
+
+      <div class="photo" id="photoBox" hidden>
+        <p>운동 끝난 모니터 화면을 찍으면 숫자를 읽어서 채워드려요.</p>
+        <button class="secondary" id="photoBtn" type="button">모니터 사진으로 채우기</button>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" hidden>
+      </div>
+      <p class="msg" id="photoMsg" hidden></p>
+
+      <div class="row">
+        <div class="field"><label class="lbl" for="dist" id="lblDist">거리 (m)</label><input id="dist" class="mono" inputmode="numeric" placeholder="2000"></div>
+        <div class="field"><label class="lbl" for="time">시간</label><input id="time" class="mono" inputmode="decimal" placeholder="6:58.4"></div>
+        <div class="field"><label class="lbl" for="rate" id="lblRate">평균 레이트 (spm)</label><input id="rate" class="mono" inputmode="numeric" placeholder="32"></div>
+        <div class="field gymOnly" hidden><label class="lbl" for="rpe">힘든 정도 RPE (1–10)</label><input id="rpe" class="mono" inputmode="numeric" placeholder="7"></div>
+        <div class="field gymOnly" hidden><label class="lbl" for="gymNote">한 내용 (선택)</label><input id="gymNote" maxlength="80" placeholder="예: 3바퀴, 스쿼트 20kg"></div>
+        <div class="field bikeOnly" hidden><label class="lbl" for="power">평균 파워 (W, 선택)</label><input id="power" class="mono" inputmode="numeric" placeholder="180"></div>
+      </div>
+
+      <div class="row">
+        <div class="field"><label class="lbl" for="hr">평균 심박 (bpm)</label><input id="hr" class="mono" inputmode="numeric" placeholder="142"></div>
+        <div class="field zoneOnly tipwrap"><span class="lblrow"><label class="lbl" for="hr1">전반부 심박</label><button class="q" type="button" aria-describedby="tip1" aria-label="전반부·후반부 심박 설명">?</button><span class="tip" role="tooltip" id="tip1"><b>전반부 심박</b>은 운동을 절반으로 나눴을 때 앞 절반의 평균 심박, <b>후반부 심박</b>은 뒷 절반의 평균 심박이에요. 16km라면 처음 8km와 마지막 8km예요.<br><br>같은 파워인데 후반에 심박이 많이 오르면(심박 표류) 아직 그 파워가 버겁다는 뜻이에요. PM5를 8km 구간(스플릿)으로 설정하거나 심박계 앱의 구간 기록에서 볼 수 있어요. 모르면 비워도 돼요.</span></span><input id="hr1" class="mono" inputmode="numeric" placeholder="138"></div>
+        <div class="field zoneOnly"><label class="lbl" for="hr2">후반부 심박</label><input id="hr2" class="mono" inputmode="numeric" placeholder="146"></div>
+      </div>
+      <p class="hint" id="zoneHint"></p>
+      <div class="add-row" id="maxRow" hidden>
+        <input id="maxhr" class="mono" inputmode="numeric" placeholder="최대 심박 (예: 195)">
+        <button class="secondary" id="saveMax" type="button">저장</button>
+      </div>
+
+      <div class="lcd" aria-live="polite">
+        <div><small id="lcdSplitLbl">/500m</small><strong id="outSplit">-:--.-</strong></div>
+        <div><small id="lcdWattLbl">WATTS</small><strong id="outWatt">---</strong></div>
+        <div><small>METERS</small><strong id="outDist">----</strong></div>
+      </div>
+
+      <div class="field">
+        <span class="lbl">오늘 컨디션 (선택, 한 번만 누르면 끝)</span>
+        <div class="feel" id="feel"></div>
+      </div>
+
+      <div class="row2">
+        <div class="field"><label class="lbl" for="weight">체중 (kg, 선택)</label><input id="weight" class="mono" inputmode="decimal" placeholder="72.4"></div>
+        <div class="field"><span class="lbl">아픈 곳 (선택)</span><div class="chips sm pain" id="pain"></div></div>
+      </div>
+      <input id="painNote" placeholder="어떻게 아픈지 짧게 (예: 캐치할 때 왼쪽 허리 뻐근)" maxlength="80" hidden>
+
+      <button class="primary" id="saveBtn" type="button" disabled>기록 저장</button>
+      <p class="msg" id="msg"></p>
+    </section>
+
+    <section class="panel">
+      <div class="head-row"><h2>다음 존2 세션 가이드</h2><span class="lbl" id="guideWho"></span></div>
+      <div class="gbody" id="guideBody"></div>
+      <p class="note">최대 심박의 65–75%를 존2(UT2)로 보는 일반적인 기준으로 계산한 참고값이에요. 실제 훈련 강도는 코치님과 상의해서 정하세요.</p>
+    </section>
+  </div>
+
+  <!-- 훈련 계획 -->
+  <div id="view-plan" class="stack" hidden>
+    <section class="panel">
+      <div class="head-row"><h2>훈련 프로그램</h2><button class="secondary" id="progToggle" type="button">프로그램 적용하기</button></div>
+      <p class="sub">템플릿과 시작일을 고르면 몇 주치 훈련이 한 번에 올라가요. 페이스는 선수마다 2000m 기록으로 따로 계산돼요.</p>
+      <div class="stack" id="progForm" hidden style="gap:12px">
+        <div class="chips" id="progChips"></div>
+        <p class="note" id="progDesc"></p>
+        <label class="chk" id="progWinterBox"><input type="checkbox" id="progWinter"> 동계 모드: 수상 훈련을 실내 바이크로 바꾸기</label>
+        <div class="row2">
+          <div class="field"><label class="lbl" for="progStart">시작일 (월요일 권장)</label><input id="progStart" type="date"></div>
+          <div class="field"><span class="lbl">기간</span><strong id="progRange" style="font-family:var(--f-mono);padding-top:10px"></strong></div>
+        </div>
+        <div class="tablebox"><table class="wide"><thead><tr><th>주차</th><th>세션</th><th>총 거리</th><th>UT2 비율</th><th>핵심 훈련</th></tr></thead><tbody id="progPreview"></tbody></table></div>
+        <button class="primary" id="progApply" type="button">이 프로그램 적용</button>
+        <p class="msg" id="progMsg"></p>
+      </div>
+      <div class="stack" id="progActive" style="gap:8px"></div>
+      <p class="note">템플릿은 일반적인 조정 훈련 구성을 바탕으로 만든 예시예요. 적용한 뒤 코치님이 세션을 지우거나 추가해서 팀에 맞게 바꾸세요.</p>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2>훈련 계획</h2><button class="secondary" id="planAddToggle" type="button">+ 훈련 올리기</button></div>
+      <div class="head-row">
+        <div class="weeknav"><button class="secondary" id="wkPrev" type="button" aria-label="이전 주">◀</button><b id="wkLabel"></b><button class="secondary" id="wkNext" type="button" aria-label="다음 주">▶</button></div>
+        <select id="planAthlete" aria-label="개인 목표 페이스를 볼 선수" style="width:auto;max-width:100%"></select>
+      </div>
+      <p class="sub">코치님이 훈련을 올리면 선수는 '이 훈련 기록하기'로 바로 입력하고, 누가 했는지 여기서 보여요.</p>
+      <div class="stack" id="planForm" hidden style="gap:10px">
+        <div class="row">
+          <div class="field"><label class="lbl" for="pDate">날짜</label><input id="pDate" type="date"></div>
+          <div class="field"><label class="lbl" for="pSlot">시간대</label><select id="pSlot"><option>오전</option><option>오후</option><option>저녁</option></select></div>
+          <div class="field"><label class="lbl" for="pType">종목</label><select id="pType"></select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label class="lbl" for="pDist">거리 (m)</label><input id="pDist" class="mono" inputmode="numeric" placeholder="16000"></div>
+          <div class="field"><label class="lbl" for="pTime">시간</label><input id="pTime" class="mono" placeholder="30:00"></div>
+          <div class="field"><label class="lbl" for="pRate">레이트</label><input id="pRate" class="mono" placeholder="18-20"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label class="lbl" for="pZone">강도 구간</label><select id="pZone"><option value="">없음</option><option>UT2</option><option>UT1</option><option>AT</option><option>TR</option><option>AN</option></select></div>
+          <div class="field"><label class="lbl" for="pSets">세트 구성</label><input id="pSets" maxlength="60" placeholder="예: 4×8분 / 휴식 4분"></div>
+        </div>
+        <div class="field"><label class="lbl" for="pNote">메모</label><input id="pNote" maxlength="120" placeholder="예: 심박 150 넘지 않기, 마지막 2km 레이트 22"></div>
+        <button class="primary" id="pSave" type="button">계획 올리기</button>
+        <p class="msg" id="pMsg"></p>
+      </div>
+      <div class="stack" id="planList" style="gap:18px"></div>
+    </section>
+  </div>
+
+  <!-- 내 기록 -->
+  <div id="view-me" class="stack" hidden>
+    <section class="panel">
+      <div class="athlete-row"><select id="meAthlete" aria-label="선수 선택"></select><button class="ghost" id="meSetBtn" type="button">설정</button></div>
+      <div class="stack" id="meSet" hidden style="gap:10px">
+        <div class="row">
+          <div class="field"><label class="lbl" for="sMax">최대 심박</label><input id="sMax" class="mono" inputmode="numeric" placeholder="195"></div>
+          <div class="field"><label class="lbl" for="sRace">부문</label><select id="sRace"><option value="2000">고등·일반 (2000m)</option><option value="1000">중등부 (1000m)</option></select></div>
+          <div class="field"><label class="lbl" for="sClass">체급</label><select id="sClass"><option value="open">오픈급</option><option value="light">경량급</option></select></div>
+          </div>
+        <div class="row2"><div class="field"><label class="lbl" for="sTarget">목표 체중 (kg)</label><input id="sTarget" class="mono" inputmode="decimal" placeholder="70.0"></div></div>
+        <button class="secondary" id="sSave" type="button">설정 저장</button>
+        <p class="msg" id="sMsg"></p>
+      </div>
+      <div class="stats" id="meStats"></div>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2 id="testTitle">2000m 기록 변화</h2><span class="lbl">위로 갈수록 빠름</span></div>
+      <div id="me2k"></div>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2>훈련 페이스</h2><span class="lbl" id="paceBase"></span></div>
+      <div id="mePace"></div>
+      <p class="note" id="paceNote">2000m 최고 기록의 500m 스플릿에 초를 더하는 일반적인 조정 훈련 기준이에요. 팀 기준이 따로 있으면 그걸 따르세요.</p>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2>주간 훈련량</h2><div class="chips sm" id="volUnit"></div></div>
+      <div id="meVol"></div>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2>체중</h2><span class="lbl" id="weightLbl"></span></div>
+      <div id="meWeight"></div>
+    </section>
+  </div>
+
+  <!-- 팀 보드 -->
+  <div id="view-board" class="stack" hidden>
+    <section class="panel">
+      <div class="head-row"><h2>통증 알림</h2><span class="lbl">최근 3일</span></div>
+      <ul class="alerts" id="alerts"></ul>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2>오늘 컨디션</h2><span class="lbl" id="todayLbl"></span></div>
+      <div class="cond" id="cond"></div>
+    </section>
+    <section class="panel">
+      <div class="head-row"><h2 id="rankTitle">2000m 랭킹</h2><div class="chips sm" id="rankChips"></div></div>
+      <ol class="rank" id="rank"></ol>
+    </section>
+    <section class="panel">
+      <div class="head-row">
+        <h2>전체 기록</h2>
+        <button class="secondary" id="exportBtn" type="button" hidden>엑셀(CSV)로 내보내기</button>
+      </div>
+      <div class="chips sm" id="filter"></div>
+      <div class="tablebox"><table class="wide">
+        <thead><tr><th>날짜</th><th>선수</th><th>종목</th><th>거리</th><th>시간</th><th>/500m</th><th>W</th><th>SPM</th><th>심박</th><th>컨디션</th><th></th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </section>
+  </div>
+
+  <!-- 크루 구성 -->
+  <div id="view-crew" class="stack" hidden>
+    <section class="panel">
+      <div class="head-row"><h2>크루 구성 비교</h2>
+        <select id="crewSize" aria-label="보트 크기" style="width:auto"><option value="2">2인 (2- / 2x)</option><option value="4" selected>4인 (4- / 4x)</option><option value="8">8인 (8+)</option></select>
+      </div>
+      <p class="sub">선수마다 A·B 배를 골라 보세요. 2000m 기록(중등부는 1000m 기록을 2000m로 환산)으로 두 배를 비교해요.</p>
+      <div class="chips sm">
+        <button class="chip" id="crewTop" type="button">상위 선수로 A 채우기</button>
+        <button class="chip" id="crewBalance" type="button">두 배 균형 맞추기</button>
+        <button class="chip" id="crewClear" type="button">초기화</button>
+      </div>
+      <div class="boats" id="boats"></div>
+      <div class="verdictbar" id="crewVerdict"></div>
+      <div class="crew-list" id="crewList"></div>
+      <p class="note">에르고 파워만으로 계산한 비교예요. 실제 보트 속도는 기술과 호흡이 크게 좌우하니 시트 레이스로 확인하세요.</p>
+    </section>
+    <section class="panel">
+      <h2>시트 레이스 기록</h2>
+      <p class="sub">두 선수를 바꿔 태워서 비교한 결과를 남겨두세요.</p>
+      <div class="row">
+        <div class="field"><label class="lbl" for="srA">선수 1</label><select id="srA"></select></div>
+        <div class="field"><label class="lbl" for="srB">선수 2</label><select id="srB"></select></div>
+        <div class="field"><label class="lbl" for="srMargin">차이 (초)</label><input id="srMargin" class="mono" inputmode="decimal" placeholder="1.8"></div>
+      </div>
+      <div class="add-row">
+        <select id="srWin" aria-label="이긴 선수"></select>
+        <button class="secondary" id="srSave" type="button">결과 저장</button>
+      </div>
+      <p class="msg" id="srMsg"></p>
+      <div id="srTally"></div>
+      <div class="tablebox"><table><thead><tr><th>날짜</th><th>이긴 선수</th><th>진 선수</th><th>차이</th><th></th></tr></thead><tbody id="srBody"></tbody></table></div>
+    </section>
+  </div>
+</div>
+
+<script src="vendor/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+const TYPES=[
+  {id:"2k",label:"2000m 테스트",dist:2000},
+  {id:"1k",label:"1000m 테스트",dist:1000},
+  {id:"ut2",label:"존2 (UT2)",zone:true},
+  {id:"6k",label:"6000m",dist:6000},
+  {id:"30m",label:"30분",time:1800},
+  {id:"int",label:"인터벌"},
+  {id:"water",label:"수상 훈련",water:true},
+  {id:"bike",label:"바이크",bike:true},
+  {id:"circuit",label:"서킷",gym:true},
+  {id:"weights",label:"웨이트",gym:true},
+  {id:"free",label:"자유 기록"}
+];
+const BOATS=["1x","2x","2-","4x","4-","4+","8+"];
+const FEEL=[[1,"최악"],[2,"별로"],[3,"보통"],[4,"좋음"],[5,"최고"]];
+const FEEL_LABEL={0:"미입력",1:"최악",2:"별로",3:"보통",4:"좋음",5:"최고"};
+const PAIN=["허리","갈비뼈","무릎","손목·전완","어깨","기타"];
+const BOARD_FILTER=["ut2","30m","2k","1k","6k","int","bike","circuit","weights","water"];
+const HRZ={UT2:[.65,.75],UT1:[.75,.80],AT:[.80,.85],TR:[.85,.92],AN:[.92,1]};
+const ZONES={UT2:["저강도 장거리 (존2)",18,22],UT1:["중강도 지구력",12,16],AT:["젖산 역치",7,10],TR:["고강도 인터벌",3,5],AN:["레이스 페이스 이상",-2,1]};
+function ses(d,type,o){return Object.assign({d,slot:"오전",type},o);}
+function ut(d,m,note){return ses(d,"ut2",{zone:"UT2",distance:m,rateLo:18,rateHi:20,note:note||null});}
+function wat(d,m,note){return ses(d,"water",{zone:"UT2",distance:m,rateLo:18,rateHi:20,note:note||"기술 위주, 피니시 길게"});}
+function bike(d,min,zone,sets,note){return ses(d,"bike",{zone:zone||"UT2",timeSec:min*60,sets:sets||null,note:note||"심박 존 유지, 케이던스 80–90rpm"});}
+const CIR="8종목 × 40초 운동/20초 휴식 × 3바퀴, 바퀴 사이 2분: 고블릿 스쿼트, 푸시업, 플랭크, 런지, 밴드 로우, 사이드 플랭크(좌우), 버피, 데드버그";
+const CIR_Y="8종목 × 30초 운동/30초 휴식 × 2–3바퀴 (맨몸): 스쿼트, 푸시업(힘들면 무릎), 플랭크, 런지, 밴드 로우, 사이드 플랭크, 점프 잭, 버드독";
+const WT={end:"근지구력: 레그프레스, 루마니안 데드리프트, 벤치풀, 벤치프레스, 코어 — 3세트 × 15–20회 (가볍게, 자세 우선)",
+  str:"근력: 백스쿼트, 데드리프트, 벤치풀, 벤치프레스 — 4세트 × 5–6회 (1RM 80–85%), 코어 3세트",
+  pow:"파워: 파워클린, 점프 스쿼트, 스피드 벤치풀 — 4세트 × 3–5회 빠르게 (1RM 40–60%), 세트 사이 충분히 휴식"};
+function cir(d,youth,slot){return ses(d,"circuit",{slot:slot||"오후",timeSec:(youth?30:40)*60,sets:youth?CIR_Y:CIR,note:youth?"자세가 무너지면 쉬기. 허리 통증 있으면 빼기":"자세가 무너지면 그 세트는 멈추기"});}
+function wts(d,kind,slot){return ses(d,"weights",{slot:slot||"오후",timeSec:60*60,sets:WT[kind],note:"워밍업 10분, 허리 중립 유지"});}
+const pm=x=>Object.assign(x,{slot:"오후"});
+function itv(d,zone,sets,lo,hi,note){return ses(d,"int",{zone,sets,rateLo:lo,rateHi:hi,note:note||null});}
+const PROGRAMS=[
+  {id:"base4",name:"유산소 기반 4주",weeks:4,desc:"비시즌용. 존2 위주로 거리를 조금씩 늘리고 4주차에 양을 줄여 회복해요. 주 6회.",
+    build:w=>{const f=[1,1.1,1.2,.75][w],k=m=>Math.round(m*f/1000)*1000;return [
+      ut(0,k(14000)),itv(1,"UT1","3×20분 / 휴식 3분",20,22),wat(2,k(14000)),ut(3,k(16000)),
+      itv(4,"AT",w===3?"3×8분 / 휴식 4분":"4×8분 / 휴식 4분",24,26),ut(5,w===3?12000:k(18000)),cir(1),cir(3)];}},
+  {id:"race6",name:"2000m 대비 6주",weeks:6,desc:"유산소를 유지하면서 AT·TR·레이스 페이스 비중을 늘리고, 6주차 토요일에 2000m 테스트를 봐요. 주 5–6회.",
+    build:w=>{
+      if(w<2)return [ut(0,14000),itv(1,"TR","6×500m / 휴식 2분",30,32),wat(2,14000),ut(3,16000),itv(4,"AT","4×10분 / 휴식 4분",24,26),ut(5,18000)];
+      if(w<4)return [ut(0,14000),itv(1,"TR","8×500m / 휴식 1분30초",30,32),wat(2,12000),ut(3,14000),itv(4,"AT","3×2000m / 휴식 5분",26,28),ut(5,16000)];
+      if(w===4)return [ut(0,12000),itv(1,"AN","3×750m 레이스 페이스 / 휴식 6분",34,36),wat(2,12000,"스타트·하이 연습"),ut(3,12000),itv(4,"TR","4×1000m / 휴식 4분",30,32),ut(5,14000)];
+      return [ut(0,10000),itv(1,"AN","2×500m 레이스 페이스 + 스타트 3회 / 휴식 6분",34,36),ut(2,8000,"가볍게"),itv(3,"TR","3×250m 스타트 / 휴식 3분",36,40,"짧고 날카롭게"),ses(5,"2k",{zone:"AN",distance:2000,note:"워밍업 20분 이상 하고 테스트"})];}},
+  {id:"youth4",name:"중등 기초 4주",weeks:4,youth:true,desc:"중학생용 기초 체력·기술 블록이에요. 양을 적게 잡고 자세를 먼저 챙겨요. 주 5회, 4주차는 회복 주간.",
+    build:w=>{const f=[1,1.1,1.2,.8][w],k=m=>Math.round(m*f/1000)*1000;return [
+      ut(0,k(7000),"자세 먼저, 숨이 차지 않게"),wat(1,k(7000),"기술 위주: 캐치 타이밍, 블레이드 높이"),itv(2,"UT1","3×8분 / 휴식 3분",20,22),
+      ut(3,k(8000)),itv(5,"AT",w===3?"3×4분 / 휴식 3분":"4×4분 / 휴식 3분",22,24,"무리하면 바로 멈추기"),cir(1,true),cir(3,true)];}},
+  {id:"youth6",name:"중등 1000m 대비 6주",weeks:6,youth:true,desc:"중등부 1000m 경기용이에요. 짧은 인터벌과 스타트 비중을 늘리고, 6주차 토요일에 1000m 테스트를 봐요. 주 5회.",
+    build:w=>{
+      if(w<2)return [ut(0,8000),itv(1,"TR","6×250m / 휴식 1분30초",28,30),wat(2,8000),ut(3,9000),itv(5,"AT","3×1000m / 휴식 4분",24,26)];
+      if(w<4)return [ut(0,8000),itv(1,"TR","8×250m / 휴식 1분",30,32),wat(2,8000,"스타트 5회 포함"),ut(3,8000),itv(5,"AT","4×1000m / 휴식 3분",26,28)];
+      if(w===4)return [ut(0,7000),itv(1,"AN","3×500m 1000m 레이스 페이스 / 휴식 5분",32,34),wat(2,7000,"스타트·하이 연습"),ut(3,7000),itv(5,"TR","4×500m / 휴식 3분",30,32)];
+      return [ut(0,6000),itv(1,"AN","2×300m 레이스 페이스 + 스타트 3회 / 휴식 5분",32,36),ut(2,5000,"가볍게"),itv(3,"TR","3×150m 스타트 / 휴식 3분",34,38,"짧고 날카롭게"),ses(5,"1k",{zone:"AN",distance:1000,note:"워밍업 15분 이상 하고 1000m 테스트"})];}},
+  {id:"winter8",name:"동계 체력 8주",weeks:8,desc:"수상 훈련 없이 에르고와 바이크로 유산소 기반을 쌓아요. 4주차·8주차는 회복 주간. 주 6회.",
+    build:w=>{const f=[1,1.08,1.16,.75,1.1,1.18,1.25,.8][w],k=m=>Math.round(m*f/1000)*1000,mn=m=>Math.round(m*f/5)*5;return [
+      ut(0,k(14000)),bike(1,mn(60)),itv(2,"UT1","3×20분 / 휴식 3분",20,22),bike(3,mn(40),"AT",w===3||w===7?"4×5분 / 휴식 3분":"5×6분 / 휴식 3분","케이던스 90 이상, 심박 AT 구간"),
+      ut(4,k(16000)),bike(5,mn(90),"UT2",null,"길게, 대화 가능한 강도"),cir(0),wts(2,"end"),cir(4)];}},
+  {id:"ywinter6",name:"중등 동계 6주",weeks:6,youth:true,desc:"중학생 동계용이에요. 에르고는 짧게, 바이크로 유산소량을 채워서 허리 부담을 줄여요. 주 5회, 3주차·6주차는 회복 주간.",
+    build:w=>{const f=[1,1.1,.8,1.15,1.25,.85][w],k=m=>Math.round(m*f/1000)*1000,mn=m=>Math.round(m*f/5)*5;return [
+      ut(0,k(7000),"자세 먼저"),bike(1,mn(45)),itv(2,"UT1","3×8분 / 휴식 3분",20,22),bike(3,mn(30),"AT","4×4분 / 휴식 3분","무리하면 바로 멈추기"),bike(5,mn(60)),cir(0,true),cir(3,true)];}},
+  {id:"elite24",name:"엘리트 시즌 24주",weeks:24,elite:true,
+    desc:"고등 상위권·대학·실업·국가대표 수준용 연간 시즌이에요. 기초기 10주 → 특수 준비기 8주 → 시합기 4주 → 테이퍼 2주. 훈련 시간의 약 80%를 UT2로, 3주 부하 + 1주 회복, 웨이트는 근지구력 → 근력 → 파워 순서. 주 10–11회(하루 2회). 중학생은 쓰지 마세요.",
+    phase:w=>w<10?"기초기":w<18?"특수 준비기":w<22?"시합기":"테이퍼",
+    build:w=>{
+      const f=[1,1.08,1.15,.7][w%4],k=m=>Math.round(m*f/1000)*1000,rec=w%4===3;
+      if(w<10)return [ut(0,k(18000)),wts(0,"end"),wat(1,k(16000)),pm(bike(1,Math.round(60*f/5)*5)),
+        itv(2,"UT1",rec?"2×20분 / 휴식 3분":"3×20분 / 휴식 3분",20,22),cir(2),ut(3,k(20000)),wts(3,"end"),
+        itv(4,"AT",rec?"3×8분 / 휴식 4분":"4×10분 / 휴식 4분",24,26),pm(ut(4,k(12000))),ut(5,k(24000),"롱 디스턴스. 대화 가능한 강도 유지")];
+      if(w<18){const test=w===17;return [ut(0,k(16000)),wts(0,"str"),itv(1,"TR",rec?"5×500m / 휴식 2분":"8×500m / 휴식 1분30초",30,32),pm(ut(1,k(12000))),
+        wat(2,k(16000),"기술: 리듬과 보트 런"),cir(2),itv(3,"AT",rec?"2×2000m / 휴식 5분":"3×2000m / 휴식 5분",26,28),wts(3,"str"),
+        ut(4,k(18000)),pm(bike(4,45)),test?ses(5,"2k",{zone:"AN",distance:2000,note:"2000m 테스트. 워밍업 20분 이상"}):ut(5,k(20000),"마지막 2km 레이트 24")];}
+      if(w<22){const test=w===19;return [ut(0,14000),wts(0,"pow"),itv(1,"AN","3×750m 레이스 페이스 / 휴식 6분",34,36),pm(ut(1,10000)),
+        wat(2,14000,"스타트·하이·스퍼트 연습"),itv(3,"TR","4×1000m / 휴식 4분",30,32),wts(3,"pow"),ut(4,14000),
+        test?ses(5,"2k",{zone:"AN",distance:2000,note:"2000m 테스트 (시합 리허설)"}):itv(5,"AN","1000m + 500m 레이스 시뮬레이션 / 휴식 8분",34,38)];}
+      return PROGRAMS.find(x=>x.id==="taper2").build(w-22);}},
+  {id:"taper2",name:"시합 전 테이퍼 2주",weeks:2,desc:"시합 2주 전부터 양은 줄이고 강도는 유지해요. 2주차 토요일이 시합이에요.",
+    build:w=>w===0?[ut(0,12000),itv(1,"TR","5×500m / 휴식 2분",32,34),wat(2,10000),ut(3,10000),itv(4,"AN","3×500m 레이스 페이스 / 휴식 5분",34,36),ut(5,10000)]
+      :[ut(0,8000),itv(1,"AN","2×500m + 스타트 3회 / 휴식 6분",34,38),wat(2,8000,"가볍게, 기술 확인"),itv(3,"TR","3×250m 스타트 / 휴식 3분",36,40),wat(4,6000,"아주 가볍게 + 스타트 2회"),ses(5,"free",{title:"시합",note:"시합일. 워밍업 루틴대로"})]}
+];
+function mondayOf(s){const d=parseYmd(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d);}
+function addDays(s,k){const d=parseYmd(s);d.setDate(d.getDate()+k);return ymd(d);}
+function expandProgram(prog,start,winter){
+  const out=[];for(let w=0;w<prog.weeks;w++)for(let x of prog.build(w)){
+    if(winter&&x.type==="water")x=bike(x.d,prog.youth?45:60,"UT2",null,"수상 대신 실내 바이크. 심박 존2 유지, 케이던스 80–90rpm");
+    x=Object.assign({},x);
+    const p={date:addDays(start,w*7+x.d),slot:x.slot,type:x.type,week:w+1,phase:prog.phase?prog.phase(w):null,programName:prog.name+(winter&&prog.build(0).some(y=>y.type==="water")?" (동계)":"")};
+    for(const k of ["distance","timeSec","rateLo","rateHi","zone","sets","note","title"])if(x[k]!=null)p[k]=x[k];out.push(p);}
+  return out;
+}
+function hrTarget(zone,a){const z=HRZ[zone];if(!z||!a||!a.maxHR)return null;return Math.round(a.maxHR*z[0])+"–"+Math.round(a.maxHR*z[1]);}
+function zoneTarget(zone,athleteId,records){
+  const z=ZONES[zone];if(!z||!athleteId)return null;const e=eq2k(records,athleteId);if(!e)return null;
+  const s=e.split;return fmtTime(s+z[1])+"–"+fmtTime(s+z[2]);
+}
+
+const $=id=>document.getElementById(id);
+function el(tag,attrs,...kids){const e=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v);}for(const c of kids){if(c==null||c===false)continue;e.append(c instanceof Node?c:document.createTextNode(String(c)));}return e;}
+const NS="http://www.w3.org/2000/svg";
+function sv(tag,attrs,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;return e;}
+const typeOf=id=>TYPES.find(t=>t.id===id)||{id,label:id};
+const typeLabel=r=>r.type==="water"&&r.boat?"수상 ("+r.boat+")":typeOf(r.type).label;
+
+// ---- 계산 ----
+function parseTime(s){
+  s=String(s||"").trim().replace(/,/g,".");if(!s)return null;
+  const p=s.split(":");if(p.length>3)return null;
+  let t=0;for(const x of p){if(x===""||isNaN(Number(x)))return null;t=t*60+Number(x);}
+  return t>0?t:null;
+}
+function fmtTime(sec,dec=1){
+  if(!(sec>0))return "-:--.-";
+  sec=Math.round(sec*Math.pow(10,dec))/Math.pow(10,dec);
+  const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+  const ss=s.toFixed(dec).padStart(dec?dec+3:2,"0");
+  return (h?h+":"+String(m).padStart(2,"0"):m)+":"+ss;
+}
+const split=(t,d)=>t/(d/500);
+const watts=(t,d)=>2.8/Math.pow(t/d,3);
+const splitFromW=W=>Math.cbrt(2.8/W)*500;
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const today=()=>ymd(new Date());
+const dayOff=k=>{const d=new Date();d.setDate(d.getDate()+k);return ymd(d);};
+const parseYmd=s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);};
+const DOW="일월화수목금토";
+const mmdd=s=>s.slice(5).replace("-","/");
+const num=id=>{const v=Number($(id).value);return v>0?Math.round(v):null;};
+const numf=id=>{const v=Number(String($(id).value).replace(",","."));return v>0?Math.round(v*10)/10:null;};
+
+// ---- 예시 데이터 (저장되지 않음) ----
+let DEMO=null;
+function demo(){
+  if(DEMO)return DEMO;
+  const names=["예시 김도현","예시 박서준","예시 이하은","예시 최민재","예시 정유나","예시 한지호","예시 오세린","예시 윤태오"];
+  const base=[412.3,418.9,431.0,409.8,445.6,425.2,438.4,421.7];
+  const wt=[71.8,84.5,63.2,88.1,61.0,79.4,64.7,82.2];
+  const A=names.map((n,i)=>({id:"d"+i,name:n,maxHR:[196,192,199,194,201,190,198,193][i],weightClass:i===0?"light":"open",targetWeight:i===0?70:null}));
+  const R=[];let c=0;
+  const push=r=>R.push(Object.assign({id:"x"+(c++),feel:0,createdAt:c},r));
+  A.forEach((a,i)=>{
+    push({athleteId:a.id,athleteName:a.name,type:"2k",distance:2000,timeSec:base[i]+6.5,rate:30,date:dayOff(-49)});
+    push({athleteId:a.id,athleteName:a.name,type:"2k",distance:2000,timeSec:base[i]+3.1,rate:31,date:dayOff(-28)});
+    push({athleteId:a.id,athleteName:a.name,type:"2k",distance:2000,timeSec:base[i],rate:32,feel:4,date:dayOff(-6)});
+    push({athleteId:a.id,athleteName:a.name,type:"30m",distance:Math.round(7600-i*70),timeSec:1800,rate:20,feel:[4,3,5,2,3,4,4,3][i],weight:wt[i],date:today(),pain:i===3?["허리"]:i===6?["갈비뼈"]:null,painNote:i===3?"캐치할 때 허리 뻐근":null});
+  });
+  [["예시 중등 이서연",238.5,58.2],["예시 중등 김준우",224.1,64.0]].forEach(([n,t1,kg],j)=>{
+    const a={id:"y"+j,name:n,maxHR:205,raceDist:1000,weightClass:"open"};A.push(a);
+    push({athleteId:a.id,athleteName:n,type:"1k",distance:1000,timeSec:t1+5.2,rate:30,date:dayOff(-35)});
+    push({athleteId:a.id,athleteName:n,type:"1k",distance:1000,timeSec:t1+2.4,rate:31,date:dayOff(-20)});
+    push({athleteId:a.id,athleteName:n,type:"1k",distance:1000,timeSec:t1,rate:32,feel:4,date:dayOff(-5),weight:kg});
+    push({athleteId:a.id,athleteName:n,type:"ut2",distance:7000,timeSec:7000/500*(t1/2+5+20),rate:19,hr:146,date:dayOff(-1)});
+  });
+  // 예시 김도현: 8주간 존2·수상, 체중 감량
+  for(let w=0;w<8;w++){
+    const k=-7*w;
+    push({athleteId:"d0",athleteName:A[0].name,type:"ut2",distance:16000,timeSec:3828+w*9,rate:19,hr:140,hr1:138,hr2:142+(w>4?3:0),date:dayOff(k-1),weight:Math.round((71.8+w*0.35)*10)/10});
+    push({athleteId:"d0",athleteName:A[0].name,type:"ut2",distance:12000+((w%3)*2000),timeSec:(12000+((w%3)*2000))/16000*3840,rate:19,hr:141,date:dayOff(k-3),weight:Math.round((72.0+w*0.35)*10)/10});
+    if(w%2===0)push({athleteId:"d0",athleteName:A[0].name,type:"water",boat:"4x",distance:14000,timeSec:3600,rate:20,date:dayOff(k-2)});
+    if(w<3)push({athleteId:"d0",athleteName:A[0].name,type:"bike",distance:null,timeSec:3600,power:185,rate:86,hr:138,date:dayOff(k-5)});
+    if(w%3===1)push({athleteId:"d0",athleteName:A[0].name,type:"6k",distance:6000,timeSec:1335+w,rate:26,date:dayOff(k-4)});
+  }
+  const P=expandProgram(PROGRAMS[1],addDays(mondayOf(today()),-7)).map((p,i)=>Object.assign(p,{id:"dp"+i,programId:"demo"}));
+  const tp=P.find(p=>p.date===today());
+  if(tp)R.filter(r=>r.date===today()).slice(0,5).forEach(r=>r.planId=tp.id);
+  DEMO={athletes:A,records:R,plans:P,seatraces:[]};
+  return DEMO;
+}
+
+// ---- 상태 ----
+const S={tab:"log",type:"2k",feel:0,pain:new Set(),planId:null,athletes:[],records:[],plans:[],seatraces:[],live:false,demo:true,filter:"all",db:null,me:null,sel:null,
+  crew:{size:4,A:new Set(),B:new Set()},week:0,prog:PROGRAMS[0].id};
+let downloads=null,sampler=null;
+function D(){if(!S.demo)return {athletes:S.athletes,records:S.records,plans:S.plans,seatraces:S.seatraces};const d=demo();return {athletes:d.athletes,records:d.records,plans:S.plans.length?S.plans:d.plans,seatraces:S.seatraces};}
+function errText(e){
+  const c=e&&e.code;
+  if(c==="invalid_argument")return "저장 권한이 없어요. 이 페이지의 '참여자(Contributor)' 권한을 받아주세요.";
+  if(c==="quota_exceeded")return "저장 공간이 가득 찼어요. 오래된 기록을 지운 뒤 다시 시도해 주세요.";
+  return "저장하지 못했어요. 잠시 후 다시 시도해 주세요.";
+}
+function msg(id,text,kind){const m=$(id);m.hidden=false;m.textContent=text;m.className="msg "+(kind||"");}
+function confirmBtn(label,onYes){
+  let armed=false,timer;
+  const b=el("button",{class:"del",type:"button",text:label,onclick:async()=>{
+    if(!armed){armed=true;b.textContent="정말 삭제";b.classList.add("confirm");timer=setTimeout(()=>{armed=false;b.textContent=label;b.classList.remove("confirm");},3000);return;}
+    clearTimeout(timer);b.disabled=true;try{await onYes();}catch(e){b.disabled=false;b.textContent="실패";}
+  }});
+  return b;
+}
+
+// =============== 기록하기 ===============
+function renderTypes(){
+  $("types").replaceChildren(...TYPES.map(t=>el("button",{class:"chip",type:"button","aria-pressed":String(S.type===t.id),onclick:()=>{S.type=t.id;applyType();renderTypes();preview();}},t.label)));
+}
+function applyType(){
+  const t=typeOf(S.type);
+  const d=$("dist"),tm=$("time");
+  d.readOnly=!!t.dist;tm.readOnly=!!t.time;
+  if(t.dist)d.value=t.dist;else if(TYPES.some(x=>x.dist&&String(x.dist)===d.value))d.value="";
+  if(t.time)tm.value=fmtTime(t.time,0);else if(tm.value==="30:00")tm.value="";
+  d.placeholder=t.dist?String(t.dist):t.zone?"16000":t.water?"14000":"7500";
+  tm.placeholder=t.time?"30:00":t.zone?"1:04:00":t.water?"1:00:00":"6:58.4";
+  $("rate").placeholder=t.zone||t.water?"19":t.time?"20":"32";
+  document.querySelectorAll(".zoneOnly").forEach(x=>x.hidden=!t.zone);
+  $("boatBox").hidden=!t.water;
+  document.querySelectorAll(".bikeOnly").forEach(x=>x.hidden=!t.bike);
+  document.querySelectorAll(".gymOnly").forEach(x=>x.hidden=!t.gym);
+  d.closest(".field").hidden=!!t.gym;$("rate").closest(".field").hidden=!!t.gym;
+  if(t.gym)tm.placeholder="40:00";
+  $("lblDist").textContent=t.bike?"거리 (m, 선택)":"거리 (m)";$("lblRate").textContent=t.bike?"평균 케이던스 (rpm)":"평균 레이트 (spm)";
+  if(t.bike){d.placeholder="20000";tm.placeholder="1:00:00";$("rate").placeholder="85";}
+  renderZoneHint();
+}
+function renderFeel(){
+  $("feel").replaceChildren(...FEEL.map(([v,l])=>el("button",{type:"button","aria-pressed":String(S.feel===v),onclick:()=>{S.feel=S.feel===v?0:v;renderFeel();}},el("b",{text:v}),l)));
+}
+function renderPain(){
+  $("pain").replaceChildren(...PAIN.map(p=>el("button",{class:"chip",type:"button","aria-pressed":String(S.pain.has(p)),onclick:()=>{S.pain.has(p)?S.pain.delete(p):S.pain.add(p);renderPain();}},p)));
+  $("painNote").hidden=!S.pain.size;
+}
+function curAthlete(){return S.athletes.find(a=>a.id===$("athlete").value)||null;}
+function renderAthletes(){
+  const sel=$("athlete");
+  const opts=[el("option",{value:"",text:S.athletes.length?"선수를 선택하세요":"먼저 선수를 추가하세요"})];
+  const mineOnly=S.role==="athlete";const own=S.athletes.filter(a=>a.userId===S.me);
+  for(const a of (mineOnly?own:S.athletes))opts.push(el("option",{value:a.id,text:a.name}));
+  sel.replaceChildren(...opts);
+  if(mineOnly&&own[0])S.sel=own[0].id;
+  sel.disabled=mineOnly&&own.length<=1;
+  if(S.sel&&S.athletes.some(a=>a.id===S.sel))sel.value=S.sel;
+  preview();renderZoneHint();renderGuide();
+}
+function setSel(id){S.sel=id||null;try{if(id)localStorage.setItem("rn-me",id);}catch(e){}}
+function formValues(){
+  const d=Number($("dist").value),t=parseTime($("time").value),r=Number($("rate").value)||null;
+  return {d:d>0?d:null,t,r};
+}
+function preview(){
+  const {d,t}=formValues();const ty=typeOf(S.type),water=ty.water;
+  $("outDist").textContent=d?String(Math.round(d)):"----";
+  $("lcdSplitLbl").textContent=ty.bike||ty.gym?"TIME":"/500m";$("lcdWattLbl").textContent=ty.gym?"RPE":"WATTS";
+  if(ty.bike||ty.gym){$("outSplit").textContent=t?fmtTime(t,0):"-:--";$("outWatt").textContent=ty.gym?(num("rpe")?String(Math.min(10,num("rpe"))):"--"):num("power")?String(num("power")):"---";
+    if(ty.gym)$("outDist").textContent="----";
+    $("saveBtn").disabled=!(t&&$("athlete").value&&S.live);return;}
+  if(d&&t){$("outSplit").textContent=fmtTime(split(t,d));$("outWatt").textContent=water?"수상":String(Math.round(watts(t,d)));}
+  else{$("outSplit").textContent="-:--.-";$("outWatt").textContent="---";}
+  $("saveBtn").disabled=!(d&&t&&$("athlete").value&&S.live);
+}
+const zoneOf=maxHR=>({lo:Math.round(maxHR*.65),hi:Math.round(maxHR*.75),mid:Math.round(maxHR*.70)});
+function renderZoneHint(){
+  const h=$("zoneHint");const a=curAthlete();
+  if(!a){h.replaceChildren("심박은 선택 사항이에요. 존2 세션에 넣으면 다음 세션 목표를 알려드려요.");$("maxRow").hidden=true;return;}
+  const edit=el("button",{class:"linkbtn",type:"button",onclick:()=>{$("maxRow").hidden=!$("maxRow").hidden;$("maxhr").value=a.maxHR||"";}},a.maxHR?"최대 심박 변경":"최대 심박 입력");
+  if(a.maxHR){const z=zoneOf(a.maxHR);h.replaceChildren("존2 심박 ",el("b",{text:z.lo+"–"+z.hi+" bpm"})," (최대 "+a.maxHR+" 기준)",edit);}
+  else h.replaceChildren(a.name+" 선수의 최대 심박을 넣으면 존2 범위를 계산해요.",edit);
+}
+async function saveMax(){
+  const a=curAthlete();const v=num("maxhr");
+  if(!a||!v||v<150||v>230){msg("msg","최대 심박은 150–230 사이 숫자로 넣어주세요.","err");return;}
+  if(!S.live)return;
+  try{await S.db.collection("athletes").doc(a.id).update({maxHR:v});$("maxRow").hidden=true;msg("msg",a.name+" 최대 심박 "+v+" 저장했어요.","ok");}
+  catch(e){msg("msg",errText(e),"err");}
+}
+let pendingSelect=null;
+async function addAthlete(){
+  const name=$("newName").value.trim();if(!name)return;
+  if(!S.live){msg("msg","저장 기능을 쓸 수 없는 화면이라 선수를 추가할 수 없어요.","err");return;}
+  try{
+    const ref=S.db.collection("athletes").doc();
+    await ref.set({name,createdAt:Date.now(),by:S.me||null});
+    $("newName").value="";$("addRow").hidden=true;pendingSelect=ref.id;
+    msg("msg",name+" 선수를 추가했어요.","ok");
+  }catch(e){msg("msg",errText(e),"err");}
+}
+async function saveRecord(){
+  const {d,t,r}=formValues();const a=curAthlete();const ty=typeOf(S.type);if(!a||!t||(!d&&!ty.bike&&!ty.gym))return;
+  $("saveBtn").disabled=true;
+  try{
+    const rec={athleteId:a.id,athleteName:a.name,type:S.type,distance:d,timeSec:Math.round(t*10)/10,rate:r,hr:num("hr"),feel:S.feel,
+      weight:numf("weight"),pain:S.pain.size?[...S.pain]:null,painNote:S.pain.size?($("painNote").value.trim()||null):null,
+      planId:S.planId,date:today(),createdAt:Date.now(),by:S.me||null};
+    if(ty.zone){rec.hr1=num("hr1");rec.hr2=num("hr2");}
+    if(ty.water)rec.boat=$("boat").value;
+    if(ty.bike){rec.distance=d||null;rec.power=num("power");}
+    if(ty.gym){rec.distance=null;rec.rate=null;rec.rpe=num("rpe")?Math.min(10,num("rpe")):null;rec.gymNote=$("gymNote").value.trim()||null;}
+    await S.db.collection("records").doc().set(rec);
+    setSel(a.id);
+    msg("msg","저장했어요. "+a.name+" · "+(ty.gym?ty.label+" "+fmtTime(t,0)+(rec.rpe?" · RPE "+rec.rpe:""):ty.bike?"바이크 "+fmtTime(t,0)+(rec.power?" · "+rec.power+"W":""):fmtTime(split(t,d))+" /500m")+(ty.zone&&rec.hr?" · 아래에서 다음 세션 목표를 확인하세요.":""),"ok");
+    if(!ty.time)$("time").value="";
+    if(!ty.dist)$("dist").value="";
+    ["rate","hr","hr1","hr2","weight","painNote","power","rpe","gymNote"].forEach(id=>$(id).value="");
+    S.feel=0;S.pain.clear();renderFeel();renderPain();setPlan(null);
+  }catch(e){msg("msg",errText(e),"err");}
+  preview();
+}
+
+// ---- 오늘 계획 연결 ----
+function planSpec(p){
+  const parts=[];
+  if(p.distance)parts.push(p.distance+"m");
+  if(p.timeSec)parts.push(fmtTime(p.timeSec,0));
+  if(p.sets)parts.push(p.sets);
+  if(p.rateLo)parts.push((p.rateHi&&p.rateHi!==p.rateLo?p.rateLo+"–"+p.rateHi:p.rateLo)+"spm");
+  return parts.join(" · ");
+}
+const planTitle=p=>p.slot+" · "+(p.title||typeOf(p.type).label)+(p.zone?" "+p.zone:"");
+function renderTodayPlans(){
+  const ps=S.plans.filter(p=>p.date===today());
+  $("todayPlansBox").hidden=!ps.length;
+  $("todayPlans").replaceChildren(...ps.map(p=>el("button",{class:"chip",type:"button","aria-pressed":String(S.planId===p.id),onclick:()=>usePlan(p)},planTitle(p)+(p.distance?" "+p.distance/1000+"km":""))));
+}
+function setPlan(p){
+  S.planId=p?p.id:null;
+  $("planTag").hidden=!p;
+  if(p){const a=curAthlete();const tg=p.type==="bike"?(hrTarget(p.zone||"UT2",a)?"심박 "+hrTarget(p.zone||"UT2",a):null):p.zone&&a?zoneTarget(p.zone,a.id,S.records):null;
+    $("planTagText").textContent=planTitle(p)+(planSpec(p)?" · "+planSpec(p):"")+(tg?" · 목표 "+tg+(p.type==="bike"?" bpm":"/500m"):"");}
+  renderTodayPlans();
+}
+function usePlan(p){
+  S.type=p.type;applyType();renderTypes();
+  if(p.distance&&!typeOf(p.type).dist)$("dist").value=p.distance;
+  if(p.timeSec&&!typeOf(p.type).time)$("time").value=fmtTime(p.timeSec,0);
+  if(p.type==="water"&&p.boat)$("boat").value=p.boat;
+  setPlan(S.plans.some(x=>x.id===p.id)?p:null);
+  setTab("log");preview();window.scrollTo({top:0});
+}
+
+// ---- 모니터 사진 ----
+async function readPhoto(file){
+  if(!file||!sampler)return;
+  const pm=$("photoMsg");msg("photoMsg","사진을 읽는 중이에요... (처음에는 사용 허락 창이 떠요)","");
+  $("photoBtn").disabled=true;
+  try{
+    const out=await sampler.json(
+      "이 사진은 조정 에르고미터(Concept2 PM5 등) 모니터의 운동 결과 화면이야. 전체 요약 값을 읽어줘. 구간(스플릿/인터벌)이 나뉘어 있으면 맨 위 합계/요약 줄을 써. "+
+      "JSON 하나로만 답해: {\"distance\": 총 거리 미터 숫자 또는 null, \"time\": 총 시간 \"m:ss.t\" 또는 \"h:mm:ss.t\" 문자열 또는 null, \"split\": 평균 /500m \"m:ss.t\" 또는 null, \"rate\": 평균 s/m 숫자 또는 null, \"hr\": 평균 심박 숫자 또는 null}. 읽을 수 없는 값은 null. 예: {\"distance\":2000,\"time\":\"6:58.4\",\"split\":\"1:44.6\",\"rate\":32,\"hr\":null}",
+      {images:[file]});
+    let filled=[];
+    const ty=typeOf(S.type);
+    let d=Number(out&&out.distance)||null,t=parseTime(out&&out.time),sp=parseTime(out&&out.split);
+    if(!d&&t&&sp)d=Math.round(t/sp*500);
+    if(!t&&d&&sp)t=sp*d/500;
+    if(d&&!ty.dist){$("dist").value=Math.round(d);filled.push("거리");}
+    if(t&&!ty.time){$("time").value=fmtTime(t);filled.push("시간");}
+    if(out&&Number(out.rate)>0){$("rate").value=Math.round(Number(out.rate));filled.push("레이트");}
+    if(out&&Number(out.hr)>0){$("hr").value=Math.round(Number(out.hr));filled.push("심박");}
+    preview();
+    msg("photoMsg",filled.length?filled.join(", ")+"을(를) 채웠어요. 숫자가 맞는지 한 번 확인하고 저장하세요.":"화면에서 숫자를 찾지 못했어요. 결과 화면이 잘 보이게 다시 찍어주세요.",filled.length?"ok":"err");
+  }catch(e){
+    if(e&&(e.code==="not_granted"||e.code==="sampling_disabled"||e.code==="images_unavailable")){$("photoBox").hidden=true;pm.hidden=true;}
+    else if(e&&e.code==="rate_limited")msg("photoMsg","잠시 후 다시 시도해 주세요.","err");
+    else if(e&&e.code==="image_rejected")msg("photoMsg","이 사진은 읽을 수 없어요. 다른 사진으로 해주세요.","err");
+    else msg("photoMsg","사진을 읽지 못했어요. 다시 시도하거나 직접 입력해 주세요.","err");
+  }finally{$("photoBtn").disabled=false;$("photoInput").value="";}
+}
+
+// ---- 존2 가이드 ----
+function analyze(a,sessions){
+  const last=sessions[sessions.length-1];
+  const W=watts(last.timeSec,last.distance);
+  const z=zoneOf(a.maxHR);const rest=a.restHR||60;
+  const drift=last.hr1&&last.hr2?(last.hr2-last.hr1)/last.hr1*100:null;
+  let f=(z.mid-rest)/(last.hr-rest);f=Math.min(1.05,Math.max(0.95,f));
+  let tone,label,why;
+  if(last.hr>z.hi){tone=1;label="강도 높음";f=Math.min(f,0.97);
+    why="평균 심박 "+last.hr+"가 존2 상한("+z.hi+")을 넘었어요. 존2가 아니라 더 높은 강도로 탄 거예요. 다음엔 파워를 낮춰서 심박을 존 안에 두세요.";}
+  else if(drift!=null&&drift>=5){tone=3;label="후반 심박 상승";f=Math.min(f,last.hr>z.mid?0.98:1);
+    why="후반부 심박이 전반부보다 "+drift.toFixed(1)+"% 올랐어요(심박 표류). 이 파워를 끝까지 편하게 유지하기엔 아직 이르다는 신호예요. 같은 파워로 한 번 더 해보고, 표류가 5% 아래로 내려오면 올리세요.";}
+  else if(last.hr<z.lo){tone=5;label="강도 낮음";
+    why="평균 심박 "+last.hr+"가 존2 하한("+z.lo+")보다 낮아요. 파워를 올려도 존2 안에 머물 수 있어요.";}
+  else{tone=4;label="적정";
+    if(drift!=null&&drift<3&&last.hr<=z.mid){f=Math.max(f,1.02);why="심박이 존2 안에서 끝까지 안정적이었어요 (표류 "+drift.toFixed(1)+"%). 조금 올려볼 때예요.";}
+    else{f=Math.min(Math.max(f,1),1.02);why="존2 안에서 잘 유지했어요. 같은 파워를 유지하거나 아주 조금만 올리세요."+(drift==null?" 전반부·후반부 심박도 넣으면 더 정확하게 알려드려요.":"");}}
+  const next=Math.max(50,Math.round(W*f/5)*5);
+  return {last,W,z,drift,tone,label,why,next};
+}
+function renderGuide(){
+  let a=curAthlete(),recs=S.records,example=false;
+  if(!a&&S.demo){const d=demo();a=d.athletes[0];recs=d.records;example=true;}
+  $("guideWho").textContent=a?a.name:"";
+  const body=$("guideBody");
+  if(!a){body.replaceChildren(el("p",{class:"empty",text:"선수를 고르면 그 선수의 존2 기록을 보고 다음 세션 목표를 알려드려요."}));return;}
+  const ss=recs.filter(r=>r.athleteId===a.id&&r.type==="ut2"&&r.hr&&r.distance&&r.timeSec).sort((x,y)=>x.date.localeCompare(y.date)||x.createdAt-y.createdAt);
+  if(!a.maxHR){body.replaceChildren(el("p",{class:"empty",text:"위에서 '최대 심박 입력'을 누르고 최대 심박을 넣어주세요. 존2 범위를 계산할 수 있어야 가이드를 드릴 수 있어요."}));return;}
+  if(!ss.length){body.replaceChildren(el("p",{class:"empty",text:"아직 심박이 들어간 존2 세션이 없어요. 종목에서 '존2 (UT2)'를 고르고 평균 심박과 함께 저장해 보세요."}));return;}
+  const g=analyze(a,ss);const diff=g.next-Math.round(g.W);
+  const kids=[];
+  if(example)kids.push(el("div",{class:"banner"},el("b",{text:"예시"})," 선수의 존2 기록으로 보여주는 가이드예요."));
+  kids.push(el("div",{class:"verdict"},el("span",{class:"pill p"+g.tone,text:g.label}),el("p",{text:g.why})));
+  kids.push(el("div",{class:"target"},
+    el("div",null,el("small",{text:"목표 파워"}),el("strong",{class:"big",text:g.next+"W"}),el("em",{text:"지난번 "+Math.round(g.W)+"W ("+(diff>0?"+":"")+diff+"W)"})),
+    el("div",null,el("small",{text:"목표 스플릿 /500m"}),el("strong",{class:"big",text:fmtTime(splitFromW(g.next))}),el("em",{text:"지난번 "+fmtTime(split(g.last.timeSec,g.last.distance))})),
+    el("div",null,el("small",{text:"심박 범위"}),el("strong",{text:g.z.lo+"–"+g.z.hi}),el("em",{text:"bpm, 넘으면 파워를 내리세요"})),
+    el("div",null,el("small",{text:"레이트"}),el("strong",{text:"18–20"}),el("em",{text:"spm, 존2 일반 범위"}))));
+  kids.push(el("div",{class:"facts"},el("span",{text:"지난 세션 "+mmdd(g.last.date)+" · "+g.last.distance+"m"}),el("span",{text:"평균 심박 "+g.last.hr}),el("span",{text:g.drift!=null?"심박 표류 "+g.drift.toFixed(1)+"%":"심박 표류 -"})));
+  if(ss.length>=2){
+    const pts=ss.slice(-8);const ys=pts.map(r=>watts(r.timeSec,r.distance)/r.hr);
+    kids.push(el("div",{class:"field"},el("span",{class:"lbl",text:"유산소 효율 (심박 1회당 파워, W/bpm) · 최근 "+pts.length+"회"}),
+      lineChart(ys,pts.map(r=>mmdd(r.date)),{fmt:v=>v.toFixed(2),h:110}),
+      el("p",{class:"note",text:ys[0].toFixed(2)+" → "+ys[ys.length-1].toFixed(2)+(ys[ys.length-1]>=ys[0]?" · 같은 심박에서 더 큰 파워를 내고 있어요.":" · 효율이 떨어졌어요. 피로나 컨디션을 확인해 보세요.")})));
+  }
+  body.replaceChildren(...kids);
+}
+
+// =============== 차트 ===============
+function lineChart(vals,labels,o){
+  o=o||{};const W=320,H=o.h||140,pl=44,pr=12,pt=10,pb=22;
+  let mn=Math.min(...vals),mx=Math.max(...vals);
+  if(o.target!=null){mn=Math.min(mn,o.target);mx=Math.max(mx,o.target);}
+  if(mx===mn){mx+=1;mn-=1;}const padv=(mx-mn)*.08;mn-=padv;mx+=padv;
+  const n=vals.length,iw=W-pl-pr,ih=H-pt-pb;
+  const x=i=>pl+(n===1?iw/2:i*iw/(n-1));
+  const y=v=>o.invert?pt+(v-mn)/(mx-mn)*ih:pt+(mx-v)/(mx-mn)*ih;
+  const svg=sv("svg",{viewBox:"0 0 "+W+" "+H,class:"chart",role:"img"});
+  const top=o.invert?mn+padv:mx-padv,bot=o.invert?mx-padv:mn+padv;
+  [[top,y(top)],[bot,y(bot)]].forEach(([v,yy])=>{
+    svg.append(sv("line",{x1:pl,x2:W-pr,y1:yy,y2:yy,stroke:"var(--line)","stroke-width":1}));
+    svg.append(sv("text",{x:pl-6,y:yy+3,"text-anchor":"end"},o.fmt?o.fmt(v):v));
+  });
+  if(o.target!=null){const ty=y(o.target);svg.append(sv("line",{x1:pl,x2:W-pr,y1:ty,y2:ty,stroke:"var(--buoy)","stroke-width":1.5,"stroke-dasharray":"4 4"}));
+    svg.append(sv("text",{x:W-pr,y:ty-4,"text-anchor":"end",style:"fill:var(--buoy)"},"목표 "+(o.fmt?o.fmt(o.target):o.target)));}
+  if(n>1){const area=sv("path",{d:"M"+x(0)+","+(pt+ih)+" "+vals.map((v,i)=>"L"+x(i)+","+y(v)).join(" ")+" L"+x(n-1)+","+(pt+ih)+" Z",fill:"var(--lake)",opacity:".08"});svg.append(area);
+    svg.append(sv("polyline",{points:vals.map((v,i)=>x(i)+","+y(v)).join(" "),fill:"none",stroke:"var(--lake)","stroke-width":2,"stroke-linejoin":"round"}));}
+  vals.forEach((v,i)=>svg.append(sv("circle",{cx:x(i),cy:y(v),r:i===n-1?4:2.5,fill:i===n-1?"var(--buoy)":"var(--lake)"})));
+  svg.append(sv("text",{x:x(0),y:H-6,"text-anchor":n===1?"middle":"start"},labels[0]));
+  if(n>1)svg.append(sv("text",{x:x(n-1),y:H-6,"text-anchor":"end"},labels[n-1]));
+  return svg;
+}
+function stackChart(groups,series){
+  const W=320,H=150,pl=28,pr=6,pt=14,pb=22,n=groups.length,iw=W-pl-pr,ih=H-pt-pb;
+  const tot=groups.map(g=>series.reduce((s,k)=>s+(g.v[k.key]||0),0));
+  const mx=Math.max(10,...tot);const raw=mx/5,pw=Math.pow(10,Math.floor(Math.log10(raw))),step=[1,2,5,10].map(m=>m*pw).find(v=>v>=raw);const top=Math.ceil(mx/step)*step;
+  const y=v=>pt+ih-v/top*ih;const bw=iw/n*.62;
+  const svg=sv("svg",{viewBox:"0 0 "+W+" "+H,class:"chart",role:"img"});
+  for(let v=0;v<=top;v+=step){svg.append(sv("line",{x1:pl,x2:W-pr,y1:y(v),y2:y(v),stroke:"var(--line)","stroke-width":1}));svg.append(sv("text",{x:pl-5,y:y(v)+3,"text-anchor":"end"},v));}
+  groups.forEach((g,i)=>{
+    const cx=pl+iw/n*(i+.5);let acc=0;
+    series.forEach(s=>{const v=g.v[s.key]||0;if(!v)return;svg.append(sv("rect",{x:cx-bw/2,y:y(acc+v),width:bw,height:Math.max(0,y(acc)-y(acc+v)),fill:s.color,rx:2}));acc+=v;});
+    if(acc)svg.append(sv("text",{x:cx,y:y(acc)-3,"text-anchor":"middle"},Math.round(acc)));
+    if(i%2===n%2||i===n-1)svg.append(sv("text",{x:cx,y:H-6,"text-anchor":"middle"},g.label));
+  });
+  return svg;
+}
+
+// =============== 훈련 계획 ===============
+function renderPlans(){
+  const {athletes,records,plans}=D();
+  const exampleP=!S.plans.length&&S.demo;
+  // 선수 선택 (개인 목표 페이스)
+  const pa=$("planAthlete");
+  pa.replaceChildren(el("option",{value:"",text:"개인 페이스 볼 선수"}),...athletes.map(a=>el("option",{value:a.id,text:a.name+" 기준"})));
+  const selId=S.sel&&athletes.some(a=>a.id===S.sel)?S.sel:(exampleP&&athletes[0]?athletes[0].id:"");pa.value=selId;
+  // 주 이동
+  const ws=addDays(mondayOf(today()),S.week*7),we=addDays(ws,6);
+  $("wkLabel").textContent=mmdd(ws)+" – "+mmdd(we)+(S.week===0?" (이번 주)":S.week===1?" (다음 주)":S.week===-1?" (지난 주)":"");
+  const box=$("planList");const kids=[];
+  if(exampleP)kids.push(el("div",{class:"banner"},el("b",{text:"예시 계획"}),"이에요. 프로그램을 적용하거나 '+ 훈련 올리기'로 첫 계획을 올리면 사라져요."));
+  const t0=today();const order="오전오후저녁";
+  const up=plans.filter(p=>p.date>=ws&&p.date<=we).sort((a,b)=>a.date.localeCompare(b.date)||order.indexOf(a.slot)-order.indexOf(b.slot));
+  if(!up.length)kids.push(el("p",{class:"empty",text:"이 주에는 올라온 계획이 없어요."}));
+  const byDay={};up.forEach(p=>(byDay[p.date]=byDay[p.date]||[]).push(p));
+  for(const day of Object.keys(byDay)){
+    const d=parseYmd(day);const rel=day===t0?"오늘":day===dayOff(1)?"내일":day===dayOff(-1)?"어제":"";
+    kids.push(el("div",{class:"day"},el("h3",null,el("b",{text:mmdd(day)+" ("+DOW[d.getDay()]+")"}),rel?" · "+rel:""),
+      ...byDay[day].map(p=>{
+        const doneIds=new Set(records.filter(r=>r.planId===p.id).map(r=>r.athleteId));
+        const total=athletes.length;const done=athletes.filter(a=>doneIds.has(a.id));const not=athletes.filter(a=>!doneIds.has(a.id));
+        const pct=total?done.length/total*100:0;
+        const tg=p.zone?zoneTarget(p.zone,selId,records):null;const selA=athletes.find(a=>a.id===selId);
+        return el("div",{class:"plan"},
+          el("div",{class:"top"},el("div",null,el("div",{class:"t"},el("span",{text:p.slot}),p.zone?el("span",{class:"zone "+p.zone,text:p.zone}):null,p.title||typeOf(p.type).label),
+              planSpec(p)?el("div",{class:"spec",text:planSpec(p)}):null),
+            el("div",{class:"acts"},day>=t0&&p.type!=="free"?el("button",{class:"secondary",type:"button",onclick:()=>usePlan(p)},"이 훈련 기록하기"):null,
+              !exampleP&&S.live&&S.role==="coach"?confirmBtn("삭제",()=>S.db.collection("plans").doc(p.id).delete()):null)),
+          p.type==="bike"?(hrTarget(p.zone||"UT2",selA)?el("div",{class:"mytarget"},(selA?selA.name:"")+" 목표 심박 ",el("b",{text:hrTarget(p.zone||"UT2",selA)+" bpm"})):null)
+            :tg?el("div",{class:"mytarget"},(selA?selA.name:"")+" 목표 ",el("b",{text:tg+" /500m"})):null,
+          p.note?el("p",{class:"memo",text:p.note}):null,
+          p.programName?el("p",{class:"note",text:p.programName+" · "+p.week+"주차"+(p.phase?" · "+p.phase:"")}):null,
+          total&&day<=t0&&p.type!=="free"?el("div",{class:"field"},el("div",{class:"progress"},el("i",{style:"width:"+pct.toFixed(0)+"%"})),
+            el("span",{class:"done",text:"완료 "+done.length+"/"+total+"명"+(not.length&&not.length<=10?" · 아직: "+not.map(a=>a.name).join(", "):"")})):null);
+      })));
+  }
+  box.replaceChildren(...kids);
+  renderProgram();
+}
+// ---- 프로그램 ----
+function renderProgram(){
+  const prog=PROGRAMS.find(x=>x.id===S.prog);
+  $("progChips").replaceChildren(...PROGRAMS.map(x=>el("button",{class:"chip",type:"button","aria-pressed":String(x.id===S.prog),onclick:()=>{S.prog=x.id;renderProgram();}},x.name)));
+  $("progDesc").textContent=(prog.youth?"[중등부] ":prog.elite?"[엘리트] ":"")+prog.desc;
+  if(!$("progStart").value){const m=mondayOf(today());$("progStart").value=m===today()?m:addDays(m,7);}
+  const st=$("progStart").value;
+  if(!S.winterTouched){const m=parseYmd(st).getMonth();$("progWinter").checked=m===11||m===0||m===1;}
+  const hasWater=Array.from({length:prog.weeks},(_,w)=>prog.build(w)).some(l=>l.some(x=>x.type==="water"));
+  $("progWinterBox").hidden=!hasWater;
+  const ps=expandProgram(prog,st,hasWater&&$("progWinter").checked);
+  $("progRange").textContent=mmdd(st)+" – "+mmdd(addDays(st,prog.weeks*7-1))+" · "+prog.weeks+"주";
+  const rows=[];for(let w=1;w<=prog.weeks;w++){const wk=ps.filter(p=>p.week===w);const km=wk.reduce((a,p)=>a+(p.distance||0),0)/1000;
+    const bk=wk.filter(p=>p.type==="bike").reduce((a,p)=>a+p.timeSec/60,0);
+    const key=wk.filter(p=>p.zone&&p.zone!=="UT2"&&p.type!=="bike"||p.title).map(p=>p.title||p.zone+" "+(p.sets||p.distance+"m"));
+    wk.filter(p=>p.type==="bike"&&p.zone&&p.zone!=="UT2").forEach(p=>key.push("바이크 "+p.zone+" "+(p.sets||"")));
+    if(bk)key.push("바이크 총 "+Math.round(bk)+"분");
+    const mins=q=>q.timeSec?q.timeSec/60:q.distance?q.distance/250:60;
+    const cardio=wk.filter(q=>!typeOf(q.type).gym&&q.type!=="free");const tot=cardio.reduce((a,q)=>a+mins(q),0),low=cardio.filter(q=>q.zone==="UT2").reduce((a,q)=>a+mins(q),0);
+    const gymN=wk.filter(q=>typeOf(q.type).gym).length;if(gymN)key.push("서킷·웨이트 "+gymN+"회");
+    const ph=wk[0]&&wk[0].phase;
+    rows.push(el("tr",null,el("td",{class:"m",text:w+"주"+(ph?" "+ph:"")}),el("td",{class:"m",text:wk.length+"회"}),el("td",{class:"m",text:"약 "+Math.round(km)+"km+"}),
+      el("td",{class:"m",text:tot?Math.round(low/tot*100)+"%":"-"}),el("td",{text:key.join(", "),style:"white-space:normal;min-width:180px"})));}
+  $("progPreview").replaceChildren(...rows);
+  // 적용 중인 프로그램
+  const groups={};for(const p of S.plans)if(p.programId){(groups[p.programId]=groups[p.programId]||[]).push(p);}
+  $("progActive").replaceChildren(...Object.entries(groups).map(([id,list])=>{
+    const ds=list.map(p=>p.date).sort();const doneN=list.filter(p=>p.date<today()).length;
+    return el("div",{class:"prog-item"},el("div",null,el("b",{text:list[0].programName||"프로그램"}),el("small",{text:mmdd(ds[0])+" – "+mmdd(ds[ds.length-1])+" · 세션 "+list.length+"개 · 지난 세션 "+doneN+"개"})),
+      S.live&&S.role==="coach"?confirmBtn("프로그램 삭제",async()=>{for(const p of list){await S.db.collection("plans").doc(p.id).delete();}}):null);
+  }));
+}
+async function applyProgram(){
+  if(!S.live){msg("progMsg","저장 기능을 쓸 수 없는 화면이에요.","err");return;}
+  const prog=PROGRAMS.find(x=>x.id===S.prog);const st=$("progStart").value;
+  if(!st){msg("progMsg","시작일을 골라주세요.","err");return;}
+  const pid="prog-"+Date.now().toString(36);const list=expandProgram(prog,st,!$("progWinterBox").hidden&&$("progWinter").checked);
+  $("progApply").disabled=true;
+  try{
+    for(let i=0;i<list.length;i++){msg("progMsg","올리는 중... "+(i+1)+"/"+list.length,"");
+      await S.db.collection("plans").doc().set(Object.assign({},list[i],{programId:pid,createdAt:Date.now()+i,by:S.me||null}));}
+    msg("progMsg",prog.name+" 적용했어요. 아래 훈련 계획에서 주별로 볼 수 있어요.","ok");
+    S.week=Math.round((parseYmd(mondayOf(st))-parseYmd(mondayOf(today())))/6048e5);$("progForm").hidden=true;renderPlans();
+  }catch(e){msg("progMsg",errText(e)+" 일부만 올라갔다면 '프로그램 삭제' 후 다시 적용하세요.","err");}
+  $("progApply").disabled=false;
+}
+async function savePlan(){
+  if(!S.live){msg("pMsg","저장 기능을 쓸 수 없는 화면이에요.","err");return;}
+  const date=$("pDate").value;const type=$("pType").value;
+  if(!date){msg("pMsg","날짜를 골라주세요.","err");return;}
+  const ty=typeOf(type);
+  const rate=String($("pRate").value).split(/[-~–]/).map(x=>Number(x.trim())).filter(x=>x>0);
+  const p={date,slot:$("pSlot").value,type,distance:ty.dist||num("pDist"),timeSec:ty.time||parseTime($("pTime").value),
+    rateLo:rate[0]||null,rateHi:rate[1]||rate[0]||null,zone:$("pZone").value||null,sets:$("pSets").value.trim()||null,note:$("pNote").value.trim()||null,createdAt:Date.now(),by:S.me||null};
+  try{await S.db.collection("plans").doc().set(p);["pDist","pTime","pRate","pNote","pSets"].forEach(id=>$(id).value="");msg("pMsg","올렸어요. 선수들 '기록하기' 화면에도 오늘 계획으로 떠요.","ok");}
+  catch(e){msg("pMsg",errText(e),"err");}
+}
+
+// =============== 내 기록 ===============
+function bestOf(recs,id,type){type=type||"2k";let b=null;for(const r of recs)if(r.athleteId===id&&r.type===type&&(!b||r.timeSec<b.timeSec))b=r;return b;}
+// 2000m 환산 스플릿: 2k 기록이 없으면 1000m 기록 + 500m당 5초 (거리 2배마다 +5초, 폴의 법칙)
+function eq2k(recs,id){const b2=bestOf(recs,id,"2k");if(b2)return {split:split(b2.timeSec,2000),src:"2k",rec:b2};
+  const b1=bestOf(recs,id,"1k");if(b1)return {split:split(b1.timeSec,1000)+5,src:"1k",rec:b1};return null;}
+function weekStart(s){const d=parseYmd(s);const k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return ymd(d);}
+function renderMe(){
+  const {athletes,records}=D();
+  const sel=$("meAthlete");
+  sel.replaceChildren(...(athletes.length?athletes.map(a=>el("option",{value:a.id,text:a.name})):[el("option",{value:"",text:"선수가 없어요"})]));
+  let id=S.sel&&athletes.some(a=>a.id===S.sel)?S.sel:(athletes[0]&&athletes[0].id);
+  if(id)sel.value=id;
+  const a=athletes.find(x=>x.id===id);
+  $("meSetBtn").hidden=!(a&&S.live&&!S.demo&&(S.role==="coach"||a.userId===S.me));
+  const mine=a?records.filter(r=>r.athleteId===a.id):[];
+  // stats
+  const youth=a&&Number(a.raceDist)===1000;const tt=youth?"1k":"2k",td=youth?1000:2000,tl=youth?"1000m":"2000m";
+  const pb=a?(bestOf(records,a.id,tt)||null):null;const eq=a?eq2k(records,a.id):null;
+  const ws=weekStart(today());const wk=mine.filter(r=>r.date>=ws&&r.type!=="bike").reduce((s,r)=>s+(r.distance||0),0)/1000;
+  const wkMin=mine.filter(r=>r.date>=ws).reduce((s,r)=>s+(r.timeSec||0),0)/60;
+  const lastW=mine.filter(r=>r.weight).sort((x,y)=>y.date.localeCompare(x.date)||y.createdAt-x.createdAt)[0];
+  $("meStats").replaceChildren(
+    el("div",{class:"stat"},el("small",{text:tl+" 최고"+(youth?" · 중등부":"")}),el("strong",{text:pb?fmtTime(pb.timeSec):"-"}),el("em",{text:pb?fmtTime(split(pb.timeSec,td))+" · "+Math.round(watts(pb.timeSec,td))+"W":"테스트 기록 없음"})),
+    el("div",{class:"stat"},el("small",{text:"이번 주 훈련량"}),el("strong",{text:wk.toFixed(1)+"km"}),el("em",{text:mine.filter(r=>r.date>=ws).length+"회 · 총 "+Math.round(wkMin)+"분"})),
+    el("div",{class:"stat"},el("small",{text:"최근 체중"}),el("strong",{text:lastW?lastW.weight+"kg":"-"}),el("em",{text:lastW&&pb?(watts(pb.timeSec,td)/lastW.weight).toFixed(2)+" W/kg":a&&a.weightClass==="light"?"경량급":"체중 기록 없음"})));
+  // 2k chart
+  $("testTitle").textContent=tl+" 기록 변화";
+  const tests=mine.filter(r=>r.type===tt).sort((x,y)=>x.date.localeCompare(y.date));
+  $("me2k").replaceChildren(tests.length?el("div",{class:"field"},lineChart(tests.map(r=>r.timeSec),tests.map(r=>mmdd(r.date)),{invert:true,fmt:v=>fmtTime(v)}),
+    el("p",{class:"note",text:tests.length>1?"첫 테스트 대비 "+(tests[0].timeSec-tests[tests.length-1].timeSec>=0?"-":"+")+Math.abs(tests[0].timeSec-tests[tests.length-1].timeSec).toFixed(1)+"초 · 총 "+tests.length+"회":"테스트가 2번 이상 쌓이면 변화가 보여요."})):el("p",{class:"empty",text:tl+" 테스트 기록이 없어요."}));
+  // paces
+  $("paceNote").textContent=eq&&eq.src==="1k"?"1000m 기록을 2000m로 환산해서 계산했어요 (거리가 2배가 되면 500m당 약 5초 느려진다는 폴의 법칙). AN은 2000m 레이스 페이스 기준이라 1000m 레이스 페이스는 이보다 약 5초 빨라요.":"2000m 최고 기록의 500m 스플릿에 초를 더하는 일반적인 조정 훈련 기준이에요. 팀 기준이 따로 있으면 그걸 따르세요.";
+  if(eq){const s=eq.split;$("paceBase").textContent=eq.src==="1k"?"1k "+fmtTime(split(eq.rec.timeSec,1000))+" → 2k 환산 "+fmtTime(s):"2k "+fmtTime(s)+"/500m 기준";
+    const bands=Object.entries(ZONES).map(([k,v])=>[k,...v]);
+    $("mePace").replaceChildren(el("div",{class:"tablebox"},el("table",null,el("thead",null,el("tr",null,el("th",{text:"구간"}),el("th",{text:"설명"}),el("th",{text:"/500m"}),el("th",{text:"와트"}))),
+      el("tbody",null,...bands.map(([k,dsc,lo,hi])=>el("tr",null,el("td",null,el("b",{text:k})),el("td",{text:dsc}),el("td",{class:"m",text:fmtTime(s+lo)+"–"+fmtTime(s+hi)}),
+        el("td",{class:"m",text:Math.round(watts((s+hi)*4,2000))+"–"+Math.round(watts((s+lo)*4,2000))})))))));}
+  else{$("paceBase").textContent="";$("mePace").replaceChildren(el("p",{class:"empty",text:"2000m 또는 1000m 테스트를 기록하면 구간별 훈련 페이스를 계산해 드려요."}));}
+  // volume
+  const weeks=[];for(let i=7;i>=0;i--){const d=parseYmd(ws);d.setDate(d.getDate()-7*i);weeks.push(ymd(d));}
+  const groups=weeks.map(w=>({label:mmdd(w),v:{}}));
+  const unit=S.volUnit||"km";
+  $("volUnit").replaceChildren(...[["km","거리 km"],["min","시간 분"]].map(([k,l])=>el("button",{class:"chip",type:"button","aria-pressed":String(unit===k),onclick:()=>{S.volUnit=k;renderMe();}},l)));
+  for(const r of mine){const i=weeks.indexOf(weekStart(r.date));if(i<0)continue;const k=r.type==="ut2"?"ut2":r.type==="water"?"water":r.type==="bike"?"bike":typeOf(r.type).gym?"gym":"erg";
+    const v=unit==="min"?(r.timeSec||0)/60:(r.type==="bike"?0:(r.distance||0)/1000);if(v)groups[i].v[k]=(groups[i].v[k]||0)+v;}
+  const series=[{key:"ut2",color:"var(--lake)",name:"존2 에르고"},{key:"erg",color:"var(--buoy)",name:"기타 에르고"},{key:"water",color:"var(--reed)",name:"수상"}].concat(unit==="min"?[{key:"bike",color:"var(--warn)",name:"바이크"},{key:"gym",color:"var(--muted)",name:"서킷·웨이트"}]:[]);
+  $("meVol").replaceChildren(mine.length?stackChart(groups,series):el("p",{class:"empty",text:"기록이 쌓이면 주별 훈련량이 보여요."}),
+    mine.length?el("div",{class:"legend"},...series.map(s=>el("span",null,el("i",{style:"background:"+s.color}),s.name))):"",
+    mine.length&&unit==="km"?el("p",{class:"note",text:"바이크·서킷·웨이트는 거리가 없어서 '시간 분'에서만 보여요. 동계에는 시간으로 보는 걸 추천해요."}):"");
+  // weight
+  const wts=mine.filter(r=>r.weight).sort((x,y)=>x.date.localeCompare(y.date)||x.createdAt-y.createdAt);
+  const byDate={};wts.forEach(r=>byDate[r.date]=r.weight);const wd=Object.keys(byDate).sort().slice(-30);
+  $("weightLbl").textContent=a?(a.weightClass==="light"?"경량급":"오픈급")+(a.targetWeight?" · 목표 "+a.targetWeight+"kg":""):"";
+  $("meWeight").replaceChildren(wd.length?el("div",{class:"field"},lineChart(wd.map(d=>byDate[d]),wd.map(mmdd),{fmt:v=>v.toFixed(1),target:a&&a.targetWeight||null,h:130}),
+    a&&a.targetWeight?el("p",{class:"note",text:"목표까지 "+(byDate[wd[wd.length-1]]-a.targetWeight>0?(byDate[wd[wd.length-1]]-a.targetWeight).toFixed(1)+"kg 남았어요. 급하게 빼지 말고 주 0.5kg 안쪽으로 줄이세요.":"목표 체중 안이에요.")}):null)
+    :el("p",{class:"empty",text:"기록할 때 체중을 넣으면 여기서 추이가 보여요."+(a&&a.weightClass==="light"?"":" 경량급이면 '설정'에서 목표 체중을 정할 수 있어요.")}));
+  if(a&&!$("meSet").hidden){/* keep */}
+}
+function openSettings(){
+  const a=S.athletes.find(x=>x.id===$("meAthlete").value);if(!a)return;
+  $("meSet").hidden=!$("meSet").hidden;
+  $("sMax").value=a.maxHR||"";$("sRace").value=String(a.raceDist||2000);$("sClass").value=a.weightClass||"open";$("sTarget").value=a.targetWeight||"";
+}
+async function saveSettings(){
+  const a=S.athletes.find(x=>x.id===$("meAthlete").value);if(!a||!S.live)return;
+  const mx=num("sMax");if(mx&&(mx<150||mx>230)){msg("sMsg","최대 심박은 150–230 사이로 넣어주세요.","err");return;}
+  try{await S.db.collection("athletes").doc(a.id).update({maxHR:mx||null,raceDist:Number($("sRace").value),weightClass:$("sClass").value,targetWeight:numf("sTarget")});msg("sMsg","저장했어요.","ok");$("meSet").hidden=true;}
+  catch(e){msg("sMsg",errText(e),"err");}
+}
+
+// =============== 팀 보드 ===============
+function renderBoard(){
+  const {athletes,records}=D();
+  // 통증
+  const since=dayOff(-2);
+  const pains=records.filter(r=>r.pain&&r.pain.length&&r.date>=since).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);
+  $("alerts").replaceChildren(...(pains.length?pains.map(r=>el("li",null,el("b",{text:r.athleteName}),el("small",{text:mmdd(r.date)}),el("div",{text:r.pain.join(", ")+(r.painNote?" · "+r.painNote:"")}))):[el("li",{class:"empty",style:"border:0;background:none;padding:0",text:"최근 3일 동안 통증 보고가 없어요."})]));
+  // 랭킹
+  const rt=S.rankType||"2k",rd=rt==="1k"?1000:2000;
+  $("rankTitle").textContent=(rt==="1k"?"1000m":"2000m")+" 랭킹";
+  $("rankChips").replaceChildren(...[["2k","2000m"],["1k","1000m 중등"]].map(([k,l])=>el("button",{class:"chip",type:"button","aria-pressed":String(rt===k),onclick:()=>{S.rankType=k;renderBoard();}},l)));
+  const best={};for(const r of records){if(r.type!==rt)continue;const b=best[r.athleteId];if(!b||r.timeSec<b.timeSec)best[r.athleteId]=r;}
+  const list=Object.values(best).sort((a,b)=>a.timeSec-b.timeSec);
+  if(!list.length)$("rank").replaceChildren(el("li",{class:"empty",text:"아직 "+(rt==="1k"?"1000m":"2000m")+" 테스트 기록이 없어요."}));
+  else{const f=list[0].timeSec,s=list[list.length-1].timeSec;
+    $("rank").replaceChildren(...list.map((r,i)=>{const w=s===f?100:100-((r.timeSec-f)/(s-f))*55;
+      return el("li",null,el("span",{class:"pos",text:i+1}),el("div",{class:"who"},el("span",{class:"name",text:r.athleteName}),el("div",{class:"bar"},el("i",{style:"width:"+w.toFixed(1)+"%"}))),
+        el("div",{class:"num"},el("b",{text:fmtTime(r.timeSec)}),el("small",{text:fmtTime(split(r.timeSec,rd))+" · "+Math.round(watts(r.timeSec,rd))+"W · "+(i?"+"+(r.timeSec-f).toFixed(1)+"초":"1위")})));}));}
+  // 컨디션
+  const t=today();$("todayLbl").textContent=t;
+  const tf={};for(const r of records){if(r.date===t&&r.feel){const p=tf[r.athleteId];if(!p||r.createdAt>p.createdAt)tf[r.athleteId]=r;}}
+  $("cond").replaceChildren(...(athletes.length?athletes.map(a=>{const f=tf[a.id]?tf[a.id].feel:0;return el("div",null,el("span",{text:a.name}),el("span",{class:"pill p"+f,text:FEEL_LABEL[f]}));}):[el("p",{class:"empty",text:"선수를 추가하면 여기서 오늘 컨디션을 볼 수 있어요."})]));
+  // 필터 + 표
+  $("filter").replaceChildren(el("button",{class:"chip",type:"button","aria-pressed":String(S.filter==="all"),onclick:()=>{S.filter="all";renderBoard();}},"전체"),
+    ...BOARD_FILTER.map(id=>el("button",{class:"chip",type:"button","aria-pressed":String(S.filter===id),onclick:()=>{S.filter=id;renderBoard();}},typeOf(id).label)));
+  const rows=records.filter(r=>S.filter==="all"||r.type===S.filter).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,300);
+  $("tbody").replaceChildren(...(rows.length?rows.map(r=>el("tr",null,el("td",{class:"m",text:mmdd(r.date)}),el("td",{text:r.athleteName}),el("td",{text:typeLabel(r)}),
+      el("td",{class:"m",text:r.distance||"-"}),el("td",{class:"m",text:fmtTime(r.timeSec)}),el("td",{class:"m",text:r.type==="bike"||!r.distance?"-":fmtTime(split(r.timeSec,r.distance))}),
+      el("td",{class:"m",text:r.type==="bike"?(r.power||"-"):r.type==="water"||!r.distance?"-":Math.round(watts(r.timeSec,r.distance))}),el("td",{class:"m",text:r.rpe?"RPE "+r.rpe:r.rate||"-"}),el("td",{class:"m",text:r.hr||"-"}),
+      el("td",null,el("span",{class:"pill p"+(r.feel||0),text:FEEL_LABEL[r.feel||0]})),
+      el("td",null,S.demo||!(S.role==="coach"||r.by===S.me)?null:confirmBtn("삭제",()=>S.db.collection("records").doc(r.id).delete()))))
+    :[el("tr",null,el("td",{colspan:"11",class:"empty",text:"기록이 없어요."}))]));
+}
+async function exportCsv(){
+  if(S.demo)return;
+  const head=["날짜","선수","종목","보트","거리(m)","시간","/500m","와트","레이트","평균심박","전반부심박","후반부심박","컨디션","체중","통증","통증메모","RPE","파워","내용"];
+  const q=v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const rows=[...S.records].sort((a,b)=>a.date.localeCompare(b.date)||a.createdAt-b.createdAt).map(r=>[r.date,r.athleteName,typeOf(r.type).label,r.boat||"",r.distance||"",fmtTime(r.timeSec),r.type==="bike"||!r.distance?"":fmtTime(split(r.timeSec,r.distance)),r.type==="bike"?(r.power||""):r.type==="water"||!r.distance?"":Math.round(watts(r.timeSec,r.distance)),r.rate||"",r.hr||"",r.hr1||"",r.hr2||"",FEEL_LABEL[r.feel||0],r.weight||"",(r.pain||[]).join("/"),r.painNote||"",r.rpe||"",r.power||"",r.gymNote||""]);
+  const csv="﻿"+[head,...rows].map(r=>r.map(q).join(",")).join("\r\n");
+  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  const a=document.createElement("a");a.href=url;a.download="로잉노트_기록_"+today()+".csv";document.body.append(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+// =============== 크루 구성 ===============
+function crewPool(){
+  const {athletes,records}=D();
+  const lw={};for(const r of records)if(r.weight&&(!lw[r.athleteId]||r.date>lw[r.athleteId].date))lw[r.athleteId]=r;
+  return athletes.map(a=>{const e=eq2k(records,a.id);return {a,best:e&&e.rec,src:e&&e.src,W:e?watts(e.split*4,2000):null,kg:lw[a.id]?lw[a.id].weight:null};}).sort((x,y)=>(y.W||0)-(x.W||0));
+}
+function boatStat(ms){
+  const ws=ms.filter(m=>m.W);if(!ws.length)return null;
+  const avgW=ws.reduce((s,m)=>s+m.W,0)/ws.length;const kgs=ms.filter(m=>m.kg);
+  return {avgW,time:Math.cbrt(2.8/avgW)*2000,kg:kgs.length?kgs.reduce((s,m)=>s+m.kg,0)/kgs.length:null,missing:ms.length-ws.length};
+}
+function renderCrew(){
+  const pool=crewPool();const n=S.crew.size;
+  const ids=new Set(pool.map(p=>p.a.id));
+  for(const k of ["A","B"])for(const id of [...S.crew[k]])if(!ids.has(id))S.crew[k].delete(id);
+  const boatCard=(k,cls)=>{
+    const ms=pool.filter(p=>S.crew[k].has(p.a.id));const st=boatStat(ms);
+    return el("div",{class:"boat "+cls},el("h3",{text:"배 "+k+" · "+ms.length+"/"+n+"명"}),
+      el("div",{class:"big",text:st?Math.round(st.avgW)+"W":"-"}),el("small",{text:st?"평균 파워 · 에르고 환산 2k "+fmtTime(st.time)+(st.kg?" · 평균 "+st.kg.toFixed(1)+"kg":""):"선수를 골라주세요"}),
+      ms.length?el("ol",null,...ms.map(m=>el("li",{text:m.a.name+(m.W?" ("+Math.round(m.W)+"W)":" (기록 없음)")}))):null);
+  };
+  $("boats").replaceChildren(boatCard("A","a"),boatCard("B","b"));
+  const sa=boatStat(pool.filter(p=>S.crew.A.has(p.a.id))),sb=boatStat(pool.filter(p=>S.crew.B.has(p.a.id)));
+  const v=$("crewVerdict");
+  if(sa&&sb){const g=Math.abs(sa.time-sb.time);v.textContent=g<0.5?"두 배가 거의 비슷해요 (2000m 차이 0.5초 미만).":"에르고 기준으로 배 "+(sa.time<sb.time?"A":"B")+"가 2000m에서 약 "+g.toFixed(1)+"초 빠를 것으로 보여요.";}
+  else v.textContent="두 배에 선수를 넣으면 비교 결과가 나와요.";
+  $("crewList").replaceChildren(...(pool.length?pool.map(p=>{
+    const st=S.crew.A.has(p.a.id)?"A":S.crew.B.has(p.a.id)?"B":"-";
+    const set=k=>{S.crew.A.delete(p.a.id);S.crew.B.delete(p.a.id);if(k!=="-"){if(S.crew[k].size>=n){return;}S.crew[k].add(p.a.id);}renderCrew();};
+    return el("div",{class:"crew-row"},el("div",{class:"nm"},p.a.name,el("small",{text:(p.best?(p.src==="1k"?"1k ":"")+fmtTime(p.best.timeSec)+" · "+Math.round(p.W)+"W"+(p.src==="1k"?" (2k 환산)":""):"테스트 기록 없음")+(p.kg?" · "+p.kg+"kg":"")})),
+      el("div",{class:"seg"},...[["A","a"],["B","b"],["-","x"]].map(([k,c])=>el("button",{type:"button",class:c,"aria-pressed":String(st===k),"aria-label":p.a.name+" "+(k==="-"?"제외":"배 "+k),onclick:()=>set(k)},k))));
+  }):[el("p",{class:"empty",text:"선수를 추가하고 2000m 테스트를 기록하면 크루를 비교할 수 있어요."})]));
+}
+function crewTop(){const pool=crewPool().filter(p=>p.W);S.crew.A=new Set(pool.slice(0,S.crew.size).map(p=>p.a.id));S.crew.B=new Set(pool.slice(S.crew.size,S.crew.size*2).map(p=>p.a.id));renderCrew();}
+function crewBalance(){
+  const pool=crewPool().filter(p=>p.W).slice(0,S.crew.size*2);S.crew.A=new Set();S.crew.B=new Set();
+  let sa=0,sb=0;for(const p of pool){const toA=(S.crew.A.size<S.crew.size)&&(sa<=sb||S.crew.B.size>=S.crew.size);if(toA){S.crew.A.add(p.a.id);sa+=p.W;}else{S.crew.B.add(p.a.id);sb+=p.W;}}
+  renderCrew();
+}
+function renderSeat(){
+  const {athletes}=D();const opts=()=>athletes.map(a=>el("option",{value:a.id,text:a.name}));
+  const a=$("srA").value,b=$("srB").value;
+  $("srA").replaceChildren(el("option",{value:"",text:"선택"}),...opts());$("srB").replaceChildren(el("option",{value:"",text:"선택"}),...opts());
+  if(a)$("srA").value=a;if(b)$("srB").value=b;
+  updateWin();
+  const nm=id=>(athletes.find(x=>x.id===id)||{name:"(삭제된 선수)"}).name;
+  const list=[...S.seatraces].sort((x,y)=>y.date.localeCompare(x.date)||y.createdAt-x.createdAt);
+  const tally={};list.forEach(r=>{tally[r.winner]=(tally[r.winner]||{w:0,l:0});tally[r.winner].w++;const lo=r.winner===r.a?r.b:r.a;tally[lo]=(tally[lo]||{w:0,l:0});tally[lo].l++;});
+  $("srTally").replaceChildren(list.length?el("div",{class:"chips sm"},...Object.entries(tally).sort((x,y)=>y[1].w-x[1].w).map(([id,t])=>el("span",{class:"pill p4",text:nm(id)+" "+t.w+"승 "+t.l+"패"}))):"");
+  $("srBody").replaceChildren(...(list.length?list.slice(0,30).map(r=>el("tr",null,el("td",{class:"m",text:mmdd(r.date)}),el("td",{text:nm(r.winner)}),el("td",{text:nm(r.winner===r.a?r.b:r.a)}),el("td",{class:"m",text:r.margin!=null?r.margin+"초":"-"}),
+    el("td",null,S.live&&(S.role==="coach"||r.by===S.me)?confirmBtn("삭제",()=>S.db.collection("seatraces").doc(r.id).delete()):null)))
+    :[el("tr",null,el("td",{colspan:"5",class:"empty",text:"시트 레이스 기록이 없어요."}))]));
+}
+function updateWin(){
+  const {athletes}=D();const a=$("srA").value,b=$("srB").value;const nm=id=>(athletes.find(x=>x.id===id)||{}).name;
+  $("srWin").replaceChildren(el("option",{value:"",text:"이긴 선수"}),...[a,b].filter(Boolean).map(id=>el("option",{value:id,text:nm(id)+" 승"})));
+}
+async function saveSeat(){
+  const a=$("srA").value,b=$("srB").value,w=$("srWin").value;
+  if(!S.live||S.demo&&!S.athletes.length){msg("srMsg","실제 선수를 추가한 뒤에 저장할 수 있어요.","err");return;}
+  if(!a||!b||a===b||!w){msg("srMsg","서로 다른 두 선수와 이긴 선수를 골라주세요.","err");return;}
+  if(!S.athletes.some(x=>x.id===a)||!S.athletes.some(x=>x.id===b)){msg("srMsg","예시 선수는 저장할 수 없어요.","err");return;}
+  const m=Number(String($("srMargin").value).replace(",","."));
+  try{await S.db.collection("seatraces").doc().set({date:today(),a,b,winner:w,margin:m>0?Math.round(m*10)/10:null,createdAt:Date.now(),by:S.me||null});$("srMargin").value="";msg("srMsg","저장했어요.","ok");}
+  catch(e){msg("srMsg",errText(e),"err");}
+}
+
+// =============== 공통 ===============
+function setTab(t){
+  S.tab=t;
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===t)));
+  for(const v of ["log","plan","me","board","crew"])$("view-"+v).hidden=v!==t;
+  renderTab();
+  try{localStorage.setItem("rn-tab",t);}catch(e){}
+}
+function renderTab(){
+  if(S.tab==="plan")renderPlans();
+  else if(S.tab==="me")renderMe();
+  else if(S.tab==="board")renderBoard();
+  else if(S.tab==="crew"){renderCrew();renderSeat();}
+}
+function refreshMode(){
+  S.demo=!S.records.length;
+  $("demoBanner").hidden=!(S.live&&S.demo);
+  $("offlineBanner").hidden=S.live;
+  $("exportBtn").hidden=!(downloads&&!S.demo);
+  renderTodayPlans();renderGuide();renderTab();
+}
+
+// ---- 이벤트 ----
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+$("addAthleteBtn").onclick=()=>{$("addRow").hidden=!$("addRow").hidden;if(!$("addRow").hidden)$("newName").focus();};
+$("saveAthlete").onclick=addAthlete;$("newName").addEventListener("keydown",e=>{if(e.key==="Enter")addAthlete();});
+["dist","time","rate","power","rpe"].forEach(id=>$(id).addEventListener("input",preview));
+$("athlete").addEventListener("change",()=>{setSel($("athlete").value);$("maxRow").hidden=true;preview();renderZoneHint();renderGuide();});
+$("meAthlete").addEventListener("change",()=>{setSel($("meAthlete").value);$("meSet").hidden=true;if(S.athletes.some(a=>a.id===S.sel))$("athlete").value=S.sel;renderMe();renderZoneHint();renderGuide();preview();});
+$("saveMax").onclick=saveMax;$("saveBtn").onclick=saveRecord;$("exportBtn").onclick=exportCsv;
+$("planUnlink").onclick=()=>setPlan(null);
+$("photoBtn").onclick=()=>$("photoInput").click();
+$("photoInput").addEventListener("change",e=>readPhoto(e.target.files&&e.target.files[0]));
+$("planAddToggle").onclick=()=>{$("planForm").hidden=!$("planForm").hidden;if(!$("pDate").value)$("pDate").value=today();};
+$("pSave").onclick=savePlan;
+$("progToggle").onclick=()=>{$("progForm").hidden=!$("progForm").hidden;renderProgram();};
+$("progStart").addEventListener("change",renderProgram);
+$("progWinter").addEventListener("change",()=>{S.winterTouched=true;renderProgram();});$("progApply").onclick=applyProgram;
+$("wkPrev").onclick=()=>{S.week--;renderPlans();};$("wkNext").onclick=()=>{S.week++;renderPlans();};
+$("planAthlete").addEventListener("change",()=>{const v=$("planAthlete").value;if(v){setSel(v);if(S.athletes.some(a=>a.id===v))$("athlete").value=v;}renderPlans();});
+$("pType").replaceChildren(...TYPES.filter(t=>t.id!=="free").map(t=>el("option",{value:t.id,text:t.label})));
+$("pType").addEventListener("change",()=>{const t=typeOf($("pType").value);$("pDist").disabled=!!t.dist;$("pTime").disabled=!!t.time;});
+$("pType").dispatchEvent(new Event("change"));
+$("meSetBtn").onclick=openSettings;$("sSave").onclick=saveSettings;
+$("crewSize").addEventListener("change",()=>{S.crew.size=Number($("crewSize").value);S.crew.A=new Set();S.crew.B=new Set();renderCrew();});
+$("crewTop").onclick=crewTop;$("crewBalance").onclick=crewBalance;$("crewClear").onclick=()=>{S.crew.A=new Set();S.crew.B=new Set();renderCrew();};
+$("srA").addEventListener("change",updateWin);$("srB").addEventListener("change",updateWin);$("srSave").onclick=saveSeat;
+$("boat").replaceChildren(...BOATS.map(b=>el("option",{value:b,text:b})));$("boat").value="4x";
+
+try{S.sel=localStorage.getItem("rn-me");}catch(e){}
+renderTypes();applyType();renderFeel();renderPain();renderAthletes();refreshMode();
+try{const t=localStorage.getItem("rn-tab");if(t&&$("view-"+t))setTab(t);}catch(e){}
+
+// =============== 서버 (Supabase) ===============
+let sb=null,TEAM=null;
+const uuid=()=>crypto.randomUUID?crypto.randomUUID():"10000000-1000-4000-8000-100000000000".replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+const dbErr=e=>({code:e&&(e.code==="42501"||/row-level security/i.test(e.message||""))?"invalid_argument":"unavailable",message:e&&e.message});
+function makeDB(){
+  const subs={},timers={};
+  const fetchColl=async c=>{const {data,error}=await sb.from("docs").select("id,data,created_by").eq("team_id",TEAM.id).eq("collection",c).limit(10000);if(error)throw error;return data;};
+  const refresh=async c=>{const L=subs[c];if(!L||!L.size)return;try{const rows=await fetchColl(c);for(const l of L)l.deliver(rows);$("offlineBanner").hidden=true;}catch(e){$("offlineBanner").hidden=false;}};
+  const soon=c=>{clearTimeout(timers[c]);timers[c]=setTimeout(()=>refresh(c),120);};
+  sb.channel("docs-"+TEAM.id).on("postgres_changes",{event:"*",schema:"public",table:"docs",filter:"team_id=eq."+TEAM.id},p=>{
+    const c=(p.new&&p.new.collection)||(p.old&&p.old.collection);if(c)soon(c);else Object.keys(subs).forEach(soon);}).subscribe();
+  setInterval(()=>Object.keys(subs).forEach(refresh),60000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)Object.keys(subs).forEach(refresh);});
+  class Doc{constructor(c,id){this.c=c;this.id=id||uuid();}
+    async set(data){const {error}=await sb.from("docs").upsert({id:this.id,team_id:TEAM.id,collection:this.c,data});if(error)throw dbErr(error);soon(this.c);}
+    async update(p){const {data:row,error:e1}=await sb.from("docs").select("data").eq("id",this.id).single();if(e1)throw dbErr(e1);
+      const {error}=await sb.from("docs").update({data:Object.assign({},row.data,p)}).eq("id",this.id);if(error)throw dbErr(error);soon(this.c);}
+    async delete(){const {error}=await sb.from("docs").delete().eq("id",this.id);if(error)throw dbErr(error);soon(this.c);}}
+  class Q{constructor(c,o){this.c=c;this.o=o||{};}
+    orderBy(f,d){return new Q(this.c,Object.assign({},this.o,{f,d:d||"asc"}));}
+    limit(n){return new Q(this.c,Object.assign({},this.o,{n}));}
+    doc(id){return new Doc(this.c,id);}
+    onSnapshot(next,err){const o=this.o;
+      const l={deliver:rows=>{let docs=rows.map(r=>{const d=Object.assign({},r.data);if(d.by==null&&r.created_by)d.by=r.created_by;return {id:r.id,exists:true,data:()=>d};});
+        if(o.f)docs.sort((a,b)=>{const x=a.data()[o.f],y=b.data()[o.f];if(x==null)return 1;if(y==null)return -1;return (x<y?-1:x>y?1:0)*(o.d==="desc"?-1:1);});
+        if(o.n)docs=docs.slice(0,o.n);
+        next({docs,size:docs.length,empty:!docs.length,metadata:{fromCache:false,hasPendingWrites:false},docChanges:()=>[]});}};
+      (subs[this.c]=subs[this.c]||new Set()).add(l);
+      fetchColl(this.c).then(l.deliver).catch(e=>{$("offlineBanner").hidden=false;err&&err(dbErr(e));});
+      return ()=>subs[this.c].delete(l);}}
+  return {collection:c=>new Q(c),doc:p=>{const [c,id]=p.split("/");return new Doc(c,id);}};
+}
+
+// =============== 로그인 ===============
+const ID_RE=/^[a-z0-9_]{3,20}$/;
+const toEmail=id=>id.trim().toLowerCase()+"@rowingnote.app";
+let authMode="login",suMode="join",needTeamOnly=false;
+function authMsg(t,k){msg("authMsg",t,k);}
+function showAuth(mode){
+  document.body.classList.add("locked");$("authBox").hidden=false;authMode=mode==="join"?"signup":mode;needTeamOnly=mode==="join";
+  $("authTabs").hidden=needTeamOnly;
+  document.querySelectorAll("#authTabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.m===authMode)));
+  $("authLogin").hidden=authMode!=="login";$("authSignup").hidden=authMode!=="signup";
+  document.querySelectorAll(".suAcct").forEach(x=>x.hidden=needTeamOnly);
+  $("suBtn").textContent=needTeamOnly?(suMode==="create"?"팀 만들기":"팀 가입하기"):"가입하기";
+  if(needTeamOnly)authMsg("로그인은 됐어요. 팀에 가입하거나 새 팀을 만들어 주세요.","");
+}
+function setSuMode(v){suMode=v;
+  document.querySelectorAll("#suMode button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
+  $("suCodeBox").hidden=v!=="join";$("suTeamBox").hidden=v!=="create";
+  $("suModeNote").textContent=v==="join"?"코치님께 받은 6자리 팀 코드를 넣어주세요. 선수 코드로 가입하면 선수, 코치 코드로 가입하면 코치가 돼요.":"코치가 팀을 처음 만들 때 써요. 만들고 나면 선수 가입 코드와 코치 코드가 나와요.";
+  if(needTeamOnly)$("suBtn").textContent=v==="create"?"팀 만들기":"팀 가입하기";
+}
+async function doLogin(){
+  const id=$("liId").value.trim().toLowerCase(),pw=$("liPw").value;
+  if(!id||!pw){authMsg("아이디와 비밀번호를 입력해 주세요.","err");return;}
+  $("liBtn").disabled=true;authMsg("로그인 중...","");
+  const {error}=await sb.auth.signInWithPassword({email:toEmail(id),password:pw});
+  $("liBtn").disabled=false;
+  if(error){authMsg(/confirm/i.test(error.message)?"관리자 설정이 필요해요: Supabase에서 이메일 확인(Confirm email)을 꺼주세요.":"아이디나 비밀번호가 맞지 않아요.","err");return;}
+  authMsg("","");await afterLogin();
+}
+async function doSignup(){
+  const id=$("suId").value.trim().toLowerCase(),pw=$("suPw").value,name=$("suName").value.trim();
+  const code=$("suCode").value.trim().toUpperCase(),team=$("suTeam").value.trim();
+  if(!needTeamOnly){
+    if(!ID_RE.test(id)){authMsg("아이디는 영문 소문자, 숫자, _ 로 3–20자예요.","err");return;}
+    if(pw.length<6){authMsg("비밀번호는 6자 이상으로 해주세요.","err");return;}
+  }
+  if(!name){authMsg("이름을 입력해 주세요.","err");return;}
+  if(suMode==="join"&&code.length!==6){authMsg("팀 코드 6자리를 입력해 주세요.","err");return;}
+  if(suMode==="create"&&!team){authMsg("팀 이름을 입력해 주세요.","err");return;}
+  $("suBtn").disabled=true;
+  try{
+    if(!needTeamOnly){
+      authMsg("가입 중...","");
+      const {data,error}=await sb.auth.signUp({email:toEmail(id),password:pw});
+      if(error){authMsg(/registered|exists/i.test(error.message)?"이미 있는 아이디예요. 다른 아이디를 써주세요.":"가입하지 못했어요: "+error.message,"err");return;}
+      if(!data.session){authMsg("관리자 설정이 필요해요: Supabase에서 이메일 확인(Confirm email)을 꺼주세요.","err");return;}
+    }
+    const r=suMode==="create"?await sb.rpc("create_team",{p_team:team,p_name:name}):await sb.rpc("join_team",{p_code:code,p_name:name});
+    if(r.error){authMsg(r.error.message.replace(/^.*?:\s*/,"")||"팀 가입에 실패했어요.","err");needTeamOnly=true;showAuth("join");return;}
+    authMsg("","");startApp(r.data);
+  }finally{$("suBtn").disabled=false;}
+}
+async function afterLogin(){
+  const {data:{user}}=await sb.auth.getUser();if(!user){showAuth("login");return;}
+  S.me=user.id;
+  const {data,error}=await sb.rpc("my_membership");
+  if(error){showAuth("login");authMsg("서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.","err");return;}
+  if(!data){showAuth("join");return;}
+  startApp(data);
+}
+function copyText(t,btn){const done=()=>{const o=btn.textContent;btn.textContent="복사됨";setTimeout(()=>btn.textContent=o,1200);};
+  if(navigator.clipboard)navigator.clipboard.writeText(t).then(done,()=>{});}
+let started=false;
+function startApp(m){
+  if(started)return;started=true;
+  TEAM=m.team;S.role=m.role;S.myName=m.name;
+  document.body.classList.remove("locked");$("authBox").hidden=true;$("teambar").hidden=false;
+  $("tbTeam").textContent=TEAM.name;$("tbMe").textContent=m.name+" ("+(m.role==="coach"?"코치":"선수")+")";
+  const codes=[];
+  if(m.role==="coach"){codes.push(el("span",null,"선수 코드 ",el("button",{class:"code",type:"button",title:"눌러서 복사",onclick:e=>copyText(TEAM.code,e.target)},TEAM.code)));
+    if(TEAM.coach_code)codes.push(el("span",null,"코치 코드 ",el("button",{class:"code",type:"button",title:"눌러서 복사",onclick:e=>copyText(TEAM.coach_code,e.target)},TEAM.coach_code)));}
+  $("tbCodes").replaceChildren(...codes);
+  const coach=m.role==="coach";
+  $("addAthleteBtn").hidden=!coach;$("planAddToggle").hidden=!coach;$("progToggle").hidden=!coach;
+  downloads=true;S.db=makeDB();S.live=true;
+  const db=S.db;
+  const loading=setTimeout(()=>msg("msg","팀 기록을 아직 불러오지 못했어요. 인터넷 연결을 확인해 주세요.","err"),10000);
+  db.collection("athletes").orderBy("name").onSnapshot(s=>{
+    S.athletes=s.docs.map(d=>({id:d.id,...d.data()}));
+    renderAthletes();
+    if(pendingSelect&&S.athletes.some(a=>a.id===pendingSelect)){$("athlete").value=pendingSelect;setSel(pendingSelect);pendingSelect=null;preview();renderZoneHint();renderGuide();}
+    renderTab();
+  },()=>{});
+  db.collection("records").orderBy("createdAt","desc").limit(3000).onSnapshot(s=>{
+    clearTimeout(loading);if($("msg").classList.contains("err"))$("msg").textContent="";
+    S.records=s.docs.map(d=>({id:d.id,...d.data()}));
+    refreshMode();
+  },()=>{clearTimeout(loading);msg("msg","팀 기록을 불러오지 못했어요.","err");});
+  db.collection("plans").orderBy("date","desc").limit(2000).onSnapshot(s=>{S.plans=s.docs.map(d=>({id:d.id,...d.data()}));refreshMode();},()=>{});
+  db.collection("seatraces").orderBy("createdAt","desc").limit(500).onSnapshot(s=>{S.seatraces=s.docs.map(d=>({id:d.id,...d.data()}));if(S.tab==="crew")renderSeat();},()=>{});
+  refreshMode();preview();
+}
+document.querySelectorAll("#authTabs button").forEach(b=>b.onclick=()=>{authMsg("","");showAuth(b.dataset.m);});
+document.querySelectorAll("#suMode button").forEach(b=>b.onclick=()=>setSuMode(b.dataset.v));
+$("liBtn").onclick=doLogin;$("liPw").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+$("suBtn").onclick=doSignup;
+$("logoutBtn").onclick=async()=>{try{await sb.auth.signOut();}catch(e){}location.reload();};
+
+(async()=>{
+  const cfg=window.ROWING_CONFIG||{};
+  document.body.classList.add("locked");
+  if(!cfg.url||!cfg.anonKey||!window.supabase){
+    $("authBox").hidden=false;$("authTabs").hidden=true;$("authLogin").hidden=true;$("authSignup").hidden=true;
+    authMsg("서버 설정이 아직 안 됐어요. config.js에 Supabase 주소와 키를 넣어주세요.","err");return;}
+  sb=window.supabase.createClient(cfg.url,cfg.anonKey);
+  setSuMode("join");
+  const {data:{session}}=await sb.auth.getSession();
+  if(session)await afterLogin();else showAuth("login");
+})();
+})();
+</script>
+</body>
+</html>
+
