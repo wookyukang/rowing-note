@@ -690,9 +690,9 @@ let downloads=null,sampler=null;
 function D(){if(!S.demo)return {athletes:S.athletes,records:S.records,plans:S.plans,seatraces:S.seatraces};const d=demo();return {athletes:d.athletes,records:d.records,plans:S.plans.length?S.plans:d.plans,seatraces:S.seatraces};}
 function errText(e){
   const c=e&&e.code;
-  if(c==="invalid_argument")return "저장 권한이 없어요. 이 페이지의 '참여자(Contributor)' 권한을 받아주세요.";
-  if(c==="quota_exceeded")return "저장 공간이 가득 찼어요. 오래된 기록을 지운 뒤 다시 시도해 주세요.";
-  return "저장하지 못했어요. 잠시 후 다시 시도해 주세요.";
+  const why=e&&e.message?" (오류: "+e.message+")":"";
+  if(c==="invalid_argument")return "저장 권한이 없어요."+why;
+  return "저장하지 못했어요. 잠시 후 다시 시도해 주세요."+why;
 }
 function msg(id,text,kind){const m=$(id);m.hidden=false;m.textContent=text;m.className="msg "+(kind||"");}
 function confirmBtn(label,onYes){
@@ -1306,7 +1306,7 @@ function makeDB(){
   setInterval(()=>Object.keys(subs).forEach(refresh),60000);
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)Object.keys(subs).forEach(refresh);});
   class Doc{constructor(c,id){this.c=c;this.id=id||uuid();}
-    async set(data){const {error}=await sb.from("docs").upsert({id:this.id,team_id:TEAM.id,collection:this.c,data});if(error)throw dbErr(error);soon(this.c);}
+    async set(data){const {error}=await sb.from("docs").insert({id:this.id,team_id:TEAM.id,collection:this.c,data});if(error)throw dbErr(error);soon(this.c);}
     async update(p){const {data:row,error:e1}=await sb.from("docs").select("data").eq("id",this.id).single();if(e1)throw dbErr(e1);
       const {error}=await sb.from("docs").update({data:Object.assign({},row.data,p)}).eq("id",this.id);if(error)throw dbErr(error);soon(this.c);}
     async delete(){const {error}=await sb.from("docs").delete().eq("id",this.id);if(error)throw dbErr(error);soon(this.c);}}
