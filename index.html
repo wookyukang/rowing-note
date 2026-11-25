@@ -268,8 +268,9 @@ textarea{resize:vertical;line-height:1.5}
   <section class="hero-mini" id="heroMini">
     <h2>조정선수가 만든 로잉 훈련 노트</h2>
     <ul>
-      <li><b>로잉머신</b> 기록만 옮겨 적으면 스플릿·와트·칼로리 자동 계산</li>
-      <li>입문, 체지방 감량, 2000m 도전까지 <b>단계별 프로그램</b></li>
+      <li><b>로잉머신·스키에르그</b> 기록만 옮겨 적으면 스플릿·와트·칼로리 자동 계산</li>
+      <li><b>하이록스</b> 로잉 1000m 프로그램과 러닝+로우 브릭 훈련</li>
+      <li>입문, 체지방 감량, 2000m 도전, 30일 챌린지 <b>단계별 프로그램</b></li>
       <li>심박계 없어도 <b>RPE</b>로 존2 강도 안내, 개인 최고 기록 관리</li>
       <li>조정팀은 팀 코드로 코치·선수 함께 사용</li>
     </ul>
@@ -453,7 +454,7 @@ textarea{resize:vertical;line-height:1.5}
   <div id="view-plan" class="stack" hidden>
     <section class="panel">
       <div class="head-row"><h2>훈련 프로그램</h2><button class="secondary" id="progToggle" type="button">프로그램 적용하기</button></div>
-      <p class="sub">템플릿과 시작일을 고르면 몇 주치 훈련이 한 번에 올라가요. 페이스는 선수마다 2000m 기록으로 따로 계산돼요.</p>
+      <p class="sub" id="progSub">템플릿과 시작일을 고르면 몇 주치 훈련이 한 번에 올라가요. 페이스는 선수마다 2000m 기록으로 따로 계산돼요.</p>
       <div class="stack" id="progForm" hidden style="gap:12px">
         <div class="chips" id="progChips"></div>
         <p class="note" id="progDesc"></p>
@@ -467,7 +468,7 @@ textarea{resize:vertical;line-height:1.5}
         <p class="msg" id="progMsg"></p>
       </div>
       <div class="stack" id="progActive" style="gap:8px"></div>
-      <p class="note">템플릿은 일반적인 조정 훈련 구성을 바탕으로 만든 예시예요. 적용한 뒤 코치님이 세션을 지우거나 추가해서 팀에 맞게 바꾸세요.</p>
+      <p class="note" id="progNote">템플릿은 일반적인 조정 훈련 구성을 바탕으로 만든 예시예요. 적용한 뒤 코치님이 세션을 지우거나 추가해서 팀에 맞게 바꾸세요.</p>
     </section>
     <section class="panel">
       <div class="head-row"><h2>훈련 계획</h2><button class="secondary" id="planAddToggle" type="button">+ 훈련 올리기</button></div>
@@ -475,7 +476,7 @@ textarea{resize:vertical;line-height:1.5}
         <div class="weeknav"><button class="secondary" id="wkPrev" type="button" aria-label="이전 주">◀</button><b id="wkLabel"></b><button class="secondary" id="wkNext" type="button" aria-label="다음 주">▶</button></div>
         <select id="planAthlete" aria-label="개인 목표 페이스를 볼 선수" style="width:auto;max-width:100%"></select>
       </div>
-      <p class="sub">코치님이 훈련을 올리면 선수는 '이 훈련 기록하기'로 바로 입력하고, 누가 했는지 여기서 보여요.</p>
+      <p class="sub" id="planSub">코치님이 훈련을 올리면 선수는 '이 훈련 기록하기'로 바로 입력하고, 누가 했는지 여기서 보여요.</p>
       <div class="stack" id="planForm" hidden style="gap:10px">
         <div class="row">
           <div class="field"><label class="lbl" for="pDate">날짜</label><input id="pDate" type="date"></div>
@@ -629,10 +630,21 @@ textarea{resize:vertical;line-height:1.5}
       <p class="note">"오늘 세게 타야 운동한 것 같다"가 가장 흔한 실수예요. 매번 세게 타면 지치고 기록도 잘 안 늘어요. 편하게 오래, 가끔 세게.</p>
     </section>
     <section class="panel guide">
+      <h2>하이록스 로잉·스키 팁</h2>
+      <ul>
+        <li><b>순서</b> 로잉은 다섯 번째 스테이션이에요. 버피 브로드 점프 바로 다음이라 <b>다리가 지친 상태</b>로 타요. 연습도 지친 상태에서 해야 실전과 비슷해요.</li>
+        <li><b>페이스</b> 1000m 테스트 기록보다 조금 느리게(500m당 수 초) 일정하게 타는 게 전체 기록에 유리해요. 처음 100m 전력 질주는 다음 스테이션까지 망쳐요.</li>
+        <li><b>레이트</b> 26–30 정도. 레이트를 너무 올리면 심박만 오르고 거리는 안 늘어요.</li>
+        <li><b>댐퍼</b> 대회 기계는 미리 정해진 경우가 많아요. 연습할 때 4–6 정도로 익숙해지는 걸 추천해요.</li>
+        <li><b>전환</b> 앉자마자 발 스트랩을 빠르게 조이고, 끝나면 스트랩을 풀며 일어나는 동작을 미리 연습하세요. 몇 초씩 줄어요.</li>
+        <li><b>스키에르그</b> 팔로만 당기지 말고 <b>엉덩이를 뒤로 빼며 상체 체중</b>을 실어 내려요. 로잉처럼 다리·몸통이 힘의 대부분을 만들어요.</li>
+      </ul>
+    </section>
+    <section class="panel guide">
       <h2>첫 기록 재는 법</h2>
       <ol class="steps">
         <li>10분 가볍게 몸 풀기 (마지막에 10초 세게 2–3번)</li>
-        <li>입문자는 <b>500m</b>, 2주 이상 탔다면 <b>2000m</b>부터 재요.</li>
+        <li>입문자는 <b>500m</b>, 하이록스를 준비하면 <b>1000m</b>, 조정·크로스핏 기준 기록이 궁금하면 <b>2000m</b>를 재요.</li>
         <li>처음 100m에 너무 세게 나가지 마세요. <b>일정한 스플릿</b>을 유지하는 게 기록이 제일 좋아요.</li>
         <li>기록하기에서 테스트 종목으로 저장하면 내 기록에 <b>개인 최고 기록</b>과 <b>훈련 페이스</b>가 생겨요.</li>
         <li>4–8주마다 다시 재서 얼마나 빨라졌는지 확인해요.</li>
@@ -717,6 +729,8 @@ const TYPES=[
   {id:"int",label:"인터벌"},
   {id:"water",label:"수상 훈련",water:true},
   {id:"bike",label:"바이크",bike:true},
+  {id:"ski",label:"스키에르그",ski:true},
+  {id:"run",label:"러닝",run:true},
   {id:"circuit",label:"서킷",gym:true},
   {id:"weights",label:"웨이트",gym:true},
   {id:"free",label:"자유 기록"}
@@ -725,8 +739,9 @@ const BOATS=["1x","2x","2-","4x","4-","4+","8+"];
 const FEEL=[[1,"최악"],[2,"별로"],[3,"보통"],[4,"좋음"],[5,"최고"]];
 const FEEL_LABEL={0:"미입력",1:"최악",2:"별로",3:"보통",4:"좋음",5:"최고"};
 const PAIN=["허리","갈비뼈","무릎","손목·전완","어깨","기타"];
-const SOLO_TYPES=["free","ut2","int","30m","500","1k","2k","5k","bike","circuit"];
-const TEST_TYPES=[["500",500,"500m"],["1k",1000,"1000m"],["2k",2000,"2000m"],["5k",5000,"5000m"]];
+const SOLO_TYPES=["free","ut2","int","1k","500","2k","5k","30m","ski","run","bike","circuit"];
+const TEST_TYPES_TEAM=[["500",500,"500m"],["1k",1000,"1000m"],["2k",2000,"2000m"],["5k",5000,"5000m"]];
+const TEST_TYPES_SOLO=[["1k",1000,"1000m · 하이록스 거리"],["500",500,"500m"],["2k",2000,"2000m"],["5k",5000,"5000m"]];
 const BOARD_FILTER=["ut2","30m","2k","1k","6k","int","bike","circuit","weights","water"];
 const ZONE_RPE={UT2:"3–4",UT1:"4–5",AT:"6–7",TR:"8–9",AN:"9–10"};
 const HRZ={UT2:[.65,.75],UT1:[.75,.80],AT:[.80,.85],TR:[.85,.92],AN:[.92,1]};
@@ -745,6 +760,17 @@ function wts(d,kind,slot){return ses(d,"weights",{slot:slot||"오후",timeSec:60
 const pm=x=>Object.assign(x,{slot:"오후"});
 function itv(d,zone,sets,lo,hi,note){return ses(d,"int",{zone,sets,rateLo:lo,rateHi:hi,note:note||null});}
 const PROGRAMS=[
+  {id:"hyrox8",name:"하이록스 로잉 8주",weeks:8,solo:true,desc:"하이록스 로잉 1000m와 스키에르그 1000m를 위한 주 3회 에르고 세션이에요. 러닝·스테이션 훈련과 같이 하는 걸 전제로 해요. 1주차와 8주차에 1000m를 재요. 4주차는 회복 주간.",
+    build:w=>{const rec=w===3;
+      if(w===0)return [ses(0,"1k",{zone:"AN",distance:1000,note:"기준 기록. 10분 몸 풀고, 처음 200m는 너무 세게 나가지 않기"}),ses(2,"ut2",{zone:"UT2",timeSec:1800,rateLo:20,rateHi:22}),
+        ses(4,"int",{zone:"AT",sets:"3×(1km 러닝 + 1000m 로우) / 휴식 3분",rateLo:26,rateHi:28,note:"달리고 바로 타는 연습. 로우는 1000m 기록보다 8–10초 느린 페이스로 일정하게"})];
+      if(w===7)return [ses(0,"int",{zone:"TR",sets:"3×250m 레이스 페이스 / 휴식 3분",rateLo:28,rateHi:32}),ses(2,"ut2",{zone:"UT2",timeSec:1200,rateLo:20,rateHi:22,note:"가볍게"}),
+        ses(4,"1k",{zone:"AN",distance:1000,note:"최종 기록! 1주차와 비교해 보세요"})];
+      const hard=w<3?"4×1000m / 휴식 3분":w<6?"5×1000m / 휴식 2분 30초":"3×1000m / 휴식 2분";
+      return [ses(0,"int",{zone:w<3?"AT":"TR",sets:rec?"3×500m / 휴식 2분":hard,rateLo:26,rateHi:30,note:"모든 구간을 같은 스플릿으로. 마지막이 제일 빠르면 성공"}),
+        ses(2,"ut2",{zone:"UT2",timeSec:(rec?25:30+w*3)*60,rateLo:20,rateHi:22,note:w%2?"로우 대신 스키에르그로 해도 좋아요":null}),
+        ses(4,"int",{zone:"AT",sets:rec?"2×(1km 러닝 + 1000m 로우) / 휴식 3분":w<5?"3×(1km 러닝 + 1000m 로우) / 휴식 3분":"2×(1km 러닝 + 1000m 스키 + 1km 러닝 + 1000m 로우) / 휴식 4분",rateLo:26,rateHi:30,
+          note:"하이록스처럼 지친 상태에서 일정한 페이스 유지 연습"})];}},
   {id:"intro4",name:"로잉머신 입문 4주",weeks:4,solo:true,desc:"로잉머신이 처음인 분용이에요. 주 3회, 짧게 끊어 타면서 자세와 리듬을 익히고 4주차에 20분 연속으로 타요. 댐퍼는 3–5.",
     build:w=>[[ses(0,"int",{zone:"UT2",sets:"5×3분 / 휴식 1분 (자세 연습)",rateLo:20,rateHi:22,note:"다리 → 몸 → 팔 순서. 가이드 탭의 자세 4단계를 먼저 읽어보세요."}),
                ses(2,"int",{zone:"UT2",sets:"4×4분 / 휴식 1분",rateLo:20,rateHi:22}),ses(4,"free",{zone:"UT2",timeSec:600,rateLo:20,rateHi:22,note:"10분 연속, 대화할 수 있는 속도"})],
@@ -908,7 +934,7 @@ const S={tab:"log",type:"2k",feel:0,pain:new Set(),planId:null,athletes:[],recor
 let downloads=null,sampler=null;
 function nameOf(r){const a=(S.allAthletes||S.athletes).find(x=>x.id===r.athleteId);return a?a.name:r.athleteName;}
 const kcalOf=r=>{if(!r||!r.timeSec)return 0;if(r.kcal)return r.kcal;const ty=typeOf(r.type);
-  const W=ty.bike?(r.power||0):(!ty.gym&&!ty.water&&r.distance)?watts(r.timeSec,r.distance):0;if(!W)return 0;return Math.round((4*W*0.8604+300)*r.timeSec/3600);};
+  const W=ty.bike?(r.power||0):(!ty.gym&&!ty.water&&!ty.run&&r.distance)?watts(r.timeSec,r.distance):0;if(!W)return 0;return Math.round((4*W*0.8604+300)*r.timeSec/3600);};
 function D(){if(!S.demo)return {athletes:S.athletes,records:S.records,plans:S.plans,seatraces:S.seatraces};const d=demo();return {athletes:d.athletes,records:d.records,plans:S.plans.length?S.plans:d.plans,seatraces:S.seatraces};}
 function errText(e){
   const c=e&&e.code;
@@ -948,6 +974,8 @@ function applyType(){
   if(t.gym)tm.placeholder="40:00";
   $("lblDist").textContent=t.bike?"거리 (m, 선택)":"거리 (m)";$("lblRate").textContent=t.bike?"평균 케이던스 (rpm)":"평균 레이트 (spm)";
   if(t.bike){d.placeholder="20000";tm.placeholder="1:00:00";$("rate").placeholder="85";}
+  if(t.run){$("lblRate").textContent="평균 케이던스 (spm, 선택)";d.placeholder="5000";tm.placeholder="27:30";$("rate").placeholder="170";}
+  if(t.ski){d.placeholder="1000";tm.placeholder="4:10.0";$("rate").placeholder="40";}
   renderZoneHint();
 }
 function renderFeel(){
@@ -977,7 +1005,9 @@ function formValues(){
 function preview(){
   const {d,t}=formValues();const ty=typeOf(S.type),water=ty.water;
   $("outDist").textContent=d?String(Math.round(d)):"----";
-  $("lcdSplitLbl").textContent=ty.bike||ty.gym?"TIME":"/500m";$("lcdWattLbl").textContent=ty.gym?"RPE":"WATTS";
+  $("lcdSplitLbl").textContent=ty.bike||ty.gym?"TIME":ty.run?"/KM":"/500m";$("lcdWattLbl").textContent=ty.gym?"RPE":ty.run?"KM/H":"WATTS";
+  if(ty.run){if(d&&t){$("outSplit").textContent=fmtTime(t/(d/1000),0);$("outWatt").textContent=(d/1000/(t/3600)).toFixed(1);}else{$("outSplit").textContent="-:--";$("outWatt").textContent="--";}
+    $("saveBtn").disabled=!(d&&t&&$("athlete").value&&S.live);return;}
   if(ty.bike||ty.gym){$("outSplit").textContent=t?fmtTime(t,0):"-:--";$("outWatt").textContent=ty.gym?(num("rpe")?String(Math.min(10,num("rpe"))):"--"):num("power")?String(num("power")):"---";
     if(ty.gym)$("outDist").textContent="----";
     $("saveBtn").disabled=!(t&&$("athlete").value&&S.live);return;}
@@ -1029,7 +1059,7 @@ async function saveRecord(){
     else await S.db.collection("records").doc().set(rec);
     setSel(a.id);
     const kc=kcalOf(rec);
-    msg("msg",(editing?"수정했어요. ":"저장했어요. ")+(kc?"약 "+kc+"kcal · ":"")+a.name+" · "+(ty.gym?ty.label+" "+fmtTime(t,0)+(rec.rpe?" · RPE "+rec.rpe:""):ty.bike?"바이크 "+fmtTime(t,0)+(rec.power?" · "+rec.power+"W":""):fmtTime(split(t,d))+" /500m")+(ty.zone&&rec.hr?" · 아래에서 다음 세션 목표를 확인하세요.":""),"ok");
+    msg("msg",(editing?"수정했어요. ":"저장했어요. ")+(kc?"약 "+kc+"kcal · ":"")+a.name+" · "+(ty.gym?ty.label+" "+fmtTime(t,0)+(rec.rpe?" · RPE "+rec.rpe:""):ty.bike?"바이크 "+fmtTime(t,0)+(rec.power?" · "+rec.power+"W":""):ty.run?"러닝 "+(d/1000)+"km · "+fmtTime(t/(d/1000),0)+"/km":fmtTime(split(t,d))+" /500m")+(ty.zone&&rec.hr?" · 아래에서 다음 세션 목표를 확인하세요.":""),"ok");
     if(!ty.time)$("time").value="";
     if(!ty.dist)$("dist").value="";
     ["rate","hr","hr1","hr2","weight","painNote","power","rpe","gymNote"].forEach(id=>$(id).value="");
@@ -1311,7 +1341,7 @@ function renderProgram(){
     const cardio=wk.filter(q=>!typeOf(q.type).gym&&!q.title);const tot=cardio.reduce((a,q)=>a+mins(q),0),low=cardio.filter(q=>q.zone==="UT2").reduce((a,q)=>a+mins(q),0);
     const gymN=wk.filter(q=>typeOf(q.type).gym).length;if(gymN)key.push("서킷·웨이트 "+gymN+"회");
     const ph=wk[0]&&wk[0].phase;
-    rows.push(el("tr",null,el("td",{class:"m",text:w+"주"+(ph?" "+ph:"")}),el("td",{class:"m",text:wk.length+"회"}),el("td",{class:"m",text:km>=1?"약 "+Math.round(km)+"km+":"약 "+Math.round(wk.reduce((a2,q)=>a2+mins(q),0))+"분"}),
+    rows.push(el("tr",null,el("td",{class:"m",text:w+"주"+(ph?" "+ph:"")}),el("td",{class:"m",text:wk.length+"회"}),el("td",{class:"m",text:km>=1&&!S.solo?"약 "+Math.round(km)+"km+":"약 "+Math.round(wk.reduce((a2,q)=>a2+mins(q),0))+"분"}),
       el("td",{class:"m",text:tot?Math.round(low/tot*100)+"%":"-"}),el("td",{text:key.join(", "),style:"white-space:normal;min-width:180px"})));}
   $("progPreview").replaceChildren(...rows);
   // 적용 중인 프로그램
@@ -1376,17 +1406,20 @@ function renderMe(){
     el("div",{class:"stat"},el("small",{text:"이번 주 훈련량"}),el("strong",{text:wk.toFixed(1)+"km"}),el("em",{text:mine.filter(r=>r.date>=ws).length+"회 · 총 "+Math.round(wkMin)+"분"})),
     el("div",{class:"stat"},el("small",{text:"최근 체중"}),el("strong",{text:lastW?lastW.weight+"kg":"-"}),el("em",{text:lastW&&pb?(watts(pb.timeSec,td)/lastW.weight).toFixed(2)+" W/kg":a&&a.weightClass==="light"?"경량급":"체중 기록 없음"})));
   // personal bests + totals
+  const TEST_TYPES=S.solo?TEST_TYPES_SOLO:TEST_TYPES_TEAM;
   const pbCards=TEST_TYPES.map(([t,dd,l])=>{const b=a?bestOf(records,a.id,t):null;
     return el("div",{class:"stat"},el("small",{text:l}),el("strong",{text:b?fmtTime(b.timeSec):"-"}),el("em",{text:b?fmtTime(split(b.timeSec,dd))+"/500m · "+mmdd(b.date):"기록 없음"}));});
   const b30=mine.filter(r=>r.type==="30m"&&r.distance).sort((x,y)=>y.distance-x.distance)[0];
   pbCards.push(el("div",{class:"stat"},el("small",{text:"30분 최대 거리"}),el("strong",{text:b30?b30.distance+"m":"-"}),el("em",{text:b30?fmtTime(split(b30.timeSec,b30.distance))+"/500m · "+mmdd(b30.date):"기록 없음"})));
+  if(S.solo){const sk=mine.filter(r=>r.type==="ski"&&r.distance===1000).sort((x,y)=>x.timeSec-y.timeSec)[0];
+    pbCards.splice(1,0,el("div",{class:"stat"},el("small",{text:"스키에르그 1000m"}),el("strong",{text:sk?fmtTime(sk.timeSec):"-"}),el("em",{text:sk?fmtTime(split(sk.timeSec,1000))+"/500m · "+mmdd(sk.date):"거리 1000m로 기록하면 표시"})));}
   $("mePB").replaceChildren(...pbCards);
   const days=new Set(mine.map(r=>r.date));let streak=0;{const d=new Date();if(!days.has(ymd(d)))d.setDate(d.getDate()-1);while(days.has(ymd(d))){streak++;d.setDate(d.getDate()-1);}}
-  const totalKm=mine.filter(r=>!typeOf(r.type).bike&&!typeOf(r.type).gym).reduce((s2,r)=>s2+(r.distance||0),0)/1000;
+  const totalKm=mine.filter(r=>{const t2=typeOf(r.type);return !t2.bike&&!t2.gym&&!t2.run&&!t2.ski;}).reduce((s2,r)=>s2+(r.distance||0),0)/1000;
   const mon=today().slice(0,7);const monKcal=mine.filter(r=>r.date.startsWith(mon)).reduce((s2,r)=>s2+kcalOf(r),0);
   $("pbSub").textContent=mine.length?"테스트 종목별 최고":"";
   $("meTotals").replaceChildren(
-    el("div",{class:"stat"},el("small",{text:"누적 거리"}),el("strong",{text:(totalKm>=100?Math.round(totalKm):totalKm.toFixed(1))+"km"}),el("em",{text:"총 "+mine.length+"회"})),
+    el("div",{class:"stat"},el("small",{text:"누적 로잉 거리"}),el("strong",{text:(totalKm>=100?Math.round(totalKm):totalKm.toFixed(1))+"km"}),el("em",{text:"총 "+mine.length+"회"})),
     el("div",{class:"stat"},el("small",{text:"연속 기록"}),el("strong",{text:streak+"일"}),el("em",{text:streak>=3?"좋아요, 계속 이어가요!":"매일 조금씩 타보세요"})),
     el("div",{class:"stat"},el("small",{text:"이번 달 칼로리"}),el("strong",{text:Math.round(monKcal).toLocaleString()+"kcal"}),el("em",{text:"에르고·바이크 추정치"})));
   // 2k chart
@@ -1407,9 +1440,9 @@ function renderMe(){
   const groups=weeks.map(w=>({label:mmdd(w),v:{}}));
   const unit=S.volUnit||"km";
   $("volUnit").replaceChildren(...[["km","거리 km"],["min","시간 분"]].map(([k,l])=>el("button",{class:"chip",type:"button","aria-pressed":String(unit===k),onclick:()=>{S.volUnit=k;renderMe();}},l)));
-  for(const r of mine){const i=weeks.indexOf(weekStart(r.date));if(i<0)continue;const k=r.type==="ut2"?"ut2":r.type==="water"?"water":r.type==="bike"?"bike":typeOf(r.type).gym?"gym":"erg";
-    const v=unit==="min"?(r.timeSec||0)/60:(r.type==="bike"?0:(r.distance||0)/1000);if(v)groups[i].v[k]=(groups[i].v[k]||0)+v;}
-  const series=[{key:"ut2",color:"var(--lake)",name:"존2 에르고"},{key:"erg",color:"var(--buoy)",name:"기타 에르고"},{key:"water",color:"var(--reed)",name:"수상"}].concat(unit==="min"?[{key:"bike",color:"var(--warn)",name:"바이크"},{key:"gym",color:"var(--muted)",name:"서킷·웨이트"}]:[]);
+  for(const r of mine){const i=weeks.indexOf(weekStart(r.date));if(i<0)continue;const k=r.type==="ut2"?"ut2":r.type==="water"?"water":r.type==="bike"?"bike":r.type==="run"?"run":typeOf(r.type).gym?"gym":"erg";
+    const v=unit==="min"?(r.timeSec||0)/60:(r.type==="bike"||r.type==="run"?0:(r.distance||0)/1000);if(v)groups[i].v[k]=(groups[i].v[k]||0)+v;}
+  const series=[{key:"ut2",color:"var(--lake)",name:"존2 에르고"},{key:"erg",color:"var(--buoy)",name:"기타 에르고"},{key:"water",color:"var(--reed)",name:"수상"}].concat(unit==="min"?[{key:"bike",color:"var(--warn)",name:"바이크"},{key:"gym",color:"var(--muted)",name:"서킷·웨이트"},{key:"run",color:"var(--bad)",name:"러닝"}]:[]);
   $("meVol").replaceChildren(mine.length?stackChart(groups,series):el("p",{class:"empty",text:"기록이 쌓이면 주별 훈련량이 보여요."}),
     mine.length?el("div",{class:"legend"},...series.map(s=>el("span",null,el("i",{style:"background:"+s.color}),s.name))):"",
     mine.length&&unit==="km"?el("p",{class:"note",text:"바이크·서킷·웨이트는 거리가 없어서 '시간 분'에서만 보여요. 동계에는 시간으로 보는 걸 추천해요."}):"");
@@ -1473,8 +1506,8 @@ function renderBoard(){
     ...BOARD_FILTER.map(id=>el("button",{class:"chip",type:"button","aria-pressed":String(S.filter===id),onclick:()=>{S.filter=id;renderBoard();}},typeOf(id).label)));
   const rows=records.filter(r=>S.filter==="all"||r.type===S.filter).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,300);
   $("tbody").replaceChildren(...(rows.length?rows.map(r=>el("tr",null,el("td",{class:"m",text:mmdd(r.date)}),el("td",{text:S.demo?r.athleteName:nameOf(r)}),el("td",{text:typeLabel(r)}),
-      el("td",{class:"m",text:r.distance||"-"}),el("td",{class:"m",text:fmtTime(r.timeSec)}),el("td",{class:"m",text:r.type==="bike"||!r.distance?"-":fmtTime(split(r.timeSec,r.distance))}),
-      el("td",{class:"m",text:r.type==="bike"?(r.power||"-"):r.type==="water"||!r.distance?"-":Math.round(watts(r.timeSec,r.distance))}),el("td",{class:"m",text:r.rpe?"RPE "+r.rpe:r.rate||"-"}),el("td",{class:"m",text:r.hr||"-"}),
+      el("td",{class:"m",text:r.distance||"-"}),el("td",{class:"m",text:fmtTime(r.timeSec)}),el("td",{class:"m",text:r.type==="bike"||!r.distance?"-":r.type==="run"?fmtTime(r.timeSec/(r.distance/1000),0)+"/km":fmtTime(split(r.timeSec,r.distance))}),
+      el("td",{class:"m",text:r.type==="bike"?(r.power||"-"):r.type==="water"||r.type==="run"||!r.distance?"-":Math.round(watts(r.timeSec,r.distance))}),el("td",{class:"m",text:r.rpe?"RPE "+r.rpe:r.rate||"-"}),el("td",{class:"m",text:r.hr||"-"}),
       el("td",null,el("span",{class:"pill p"+(r.feel||0),text:FEEL_LABEL[r.feel||0]})),
       el("td",null,canEditRec(r)?[el("button",{class:"del",type:"button",style:"color:var(--lake)",onclick:()=>editRecord(r)},"수정"),confirmBtn("삭제",()=>S.db.collection("records").doc(r.id).delete())]:null),
       el("td",null,!S.demo&&S.role==="coach"?el("button",{class:"del",type:"button",style:"color:var(--lake)",onclick:()=>openFeedback(r.athleteId,r.id)},"피드백"+(fbCountFor(r.id)?" ("+fbCountFor(r.id)+")":"")):null)))
@@ -1921,6 +1954,9 @@ function startApp(m){
   S.solo=!!(m.team&&m.team.kind==="solo");document.body.classList.toggle("solo",S.solo);
   if(S.solo){$("tbTeam").textContent=m.name;$("tbMe").textContent="개인 로잉";
     document.querySelector('#tabs button[data-tab="plan"]').textContent="프로그램";
+    $("progSub").textContent="프로그램과 시작일을 고르면 몇 주치 훈련이 날짜별로 들어가요. 목표 페이스는 내 테스트 기록(1000m 등)으로 계산돼요.";
+    $("progNote").textContent="일반적인 훈련 원칙으로 만든 프로그램이에요. 몸 상태에 맞게 세션을 지우거나 건너뛰어도 괜찮아요. 아프면 쉬세요.";
+    $("planSub").textContent="오늘 할 훈련을 누르면 기록하기에 자동으로 채워져요. 목표 페이스는 테스트 기록이 있어야 보여요.";
     if(["board","crew","manage"].includes(S.tab))setTab("log");
     S.prog=PROGRAMS.find(x=>x.solo).id;if(!TYPES.some(t=>t.id===S.type&&SOLO_TYPES.includes(t.id))){S.type="free";}
     applyType();renderTypes();}
