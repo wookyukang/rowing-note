@@ -220,6 +220,11 @@ textarea{resize:vertical;line-height:1.5}
 .guide .defs dt{font-weight:700;color:var(--lake)}
 .guide .defs dd{margin:0}
 @media (max-width:460px){.guide .defs{grid-template-columns:1fr}.guide .defs dd{margin-bottom:6px}}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,20,25,.6);display:flex;align-items:center;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal .sheet{background:var(--surface);border-radius:16px;padding:16px;width:min(420px,100%);max-height:100%;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.modal img{width:100%;max-height:60vh;object-fit:contain;border-radius:12px;background:#0b3f4a}
+.stat.click{cursor:pointer}.stat.click:hover{border-color:var(--lake)}
 .weeknav{display:flex;align-items:center;gap:8px}
 .weeknav .secondary{padding:5px 10px}
 .weeknav b{font-family:var(--f-mono);font-size:14px;white-space:nowrap}
@@ -520,6 +525,7 @@ textarea{resize:vertical;line-height:1.5}
       <div class="head-row"><h2>개인 최고 기록</h2><span class="lbl" id="pbSub"></span></div>
       <div class="stats" id="mePB"></div>
       <div class="stats" id="meTotals"></div>
+      <div class="chips sm"><button class="chip" type="button" id="shareWeekBtn">이번 주 요약 공유 카드</button><span class="note" style="align-self:center">기록 카드를 누르면 그 기록으로 카드를 만들어요.</span></div>
     </section>
     <section class="panel">
       <div class="head-row"><h2 id="testTitle">2000m 기록 변화</h2><span class="lbl">위로 갈수록 빠름</span></div>
@@ -710,6 +716,18 @@ textarea{resize:vertical;line-height:1.5}
       <div id="srTally"></div>
       <div class="tablebox"><table><thead><tr><th>날짜</th><th>이긴 선수</th><th>진 선수</th><th>차이</th><th></th></tr></thead><tbody id="srBody"></tbody></table></div>
     </section>
+  </div>
+  <div class="modal" id="shareModal" hidden role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="sheet">
+      <div class="head-row"><h2 id="shareTitle">공유 카드</h2><button class="linkbtn" id="shareClose" type="button">닫기</button></div>
+      <img id="shareImg" alt="공유용 기록 카드 미리보기">
+      <label class="chk"><input type="checkbox" id="shareName" checked> 이름 표시</label>
+      <div class="acts" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="primary" id="shareNative" type="button" hidden style="flex:1">공유하기</button>
+        <button class="secondary" id="shareSave" type="button" style="flex:1;padding:12px">이미지 저장</button>
+      </div>
+      <p class="note">인스타 스토리에 올리려면 '공유하기'에서 인스타그램을 고르거나, 이미지를 저장한 뒤 올리세요.</p>
+    </div>
   </div>
   <footer class="note" style="text-align:center;padding-top:8px"><a href="privacy.html" target="_blank" rel="noopener">개인정보 처리방침</a></footer>
 </div>
@@ -1055,11 +1073,15 @@ async function saveRecord(){
     rec.rpe=num("rpe")?Math.min(10,num("rpe")):null;
     if(ty.gym){rec.distance=null;rec.rate=null;rec.gymNote=$("gymNote").value.trim()||null;}
     const editing=S.editId;
+    const pbInfo=editing?null:pbCheck(rec);
     if(editing){delete rec.createdAt;delete rec.by;await S.db.collection("records").doc(editing).update(rec);}
     else await S.db.collection("records").doc().set(rec);
     setSel(a.id);
     const kc=kcalOf(rec);
     msg("msg",(editing?"수정했어요. ":"저장했어요. ")+(kc?"약 "+kc+"kcal · ":"")+a.name+" · "+(ty.gym?ty.label+" "+fmtTime(t,0)+(rec.rpe?" · RPE "+rec.rpe:""):ty.bike?"바이크 "+fmtTime(t,0)+(rec.power?" · "+rec.power+"W":""):ty.run?"러닝 "+(d/1000)+"km · "+fmtTime(t/(d/1000),0)+"/km":fmtTime(split(t,d))+" /500m")+(ty.zone&&rec.hr?" · 아래에서 다음 세션 목표를 확인하세요.":""),"ok");
+    if(!editing){const saved=Object.assign({},rec,{athleteName:a.name});
+      if(pbInfo&&pbInfo.pb){$("msg").prepend(el("b",{style:"color:var(--buoy)"},pbInfo.first?"첫 기록! ":"개인 최고 기록! "));}
+      $("msg").append(" ",el("button",{class:"secondary",type:"button",style:"margin-top:6px",onclick:()=>openShare({kind:"record",rec:saved,pb:pbInfo})},pbInfo&&pbInfo.pb?"PB 공유 카드 만들기":"공유 카드 만들기"));}
     if(!ty.time)$("time").value="";
     if(!ty.dist)$("dist").value="";
     ["rate","hr","hr1","hr2","weight","painNote","power","rpe","gymNote"].forEach(id=>$(id).value="");
@@ -1408,7 +1430,7 @@ function renderMe(){
   // personal bests + totals
   const TEST_TYPES=S.solo?TEST_TYPES_SOLO:TEST_TYPES_TEAM;
   const pbCards=TEST_TYPES.map(([t,dd,l])=>{const b=a?bestOf(records,a.id,t):null;
-    return el("div",{class:"stat"},el("small",{text:l}),el("strong",{text:b?fmtTime(b.timeSec):"-"}),el("em",{text:b?fmtTime(split(b.timeSec,dd))+"/500m · "+mmdd(b.date):"기록 없음"}));});
+    return el("div",{class:"stat"+(b&&!S.demo?" click":""),title:b&&!S.demo?"눌러서 공유 카드 만들기":null,onclick:b&&!S.demo?()=>openShare({kind:"record",rec:b,pb:{pb:true,first:false,hist:true,prev:null,metric:"time"}}):null},el("small",{text:l}),el("strong",{text:b?fmtTime(b.timeSec):"-"}),el("em",{text:b?fmtTime(split(b.timeSec,dd))+"/500m · "+mmdd(b.date):"기록 없음"}));});
   const b30=mine.filter(r=>r.type==="30m"&&r.distance).sort((x,y)=>y.distance-x.distance)[0];
   pbCards.push(el("div",{class:"stat"},el("small",{text:"30분 최대 거리"}),el("strong",{text:b30?b30.distance+"m":"-"}),el("em",{text:b30?fmtTime(split(b30.timeSec,b30.distance))+"/500m · "+mmdd(b30.date):"기록 없음"})));
   if(S.solo){const sk=mine.filter(r=>r.type==="ski"&&r.distance===1000).sort((x,y)=>x.timeSec-y.timeSec)[0];
@@ -1671,6 +1693,115 @@ function renderMeFeedback(a){
   $("meFb").replaceChildren(...(S.demo&&!list.length?[el("p",{class:"empty",text:"코치가 남긴 피드백이 여기에 쌓여요."})]
     :list.length?list.slice(0,30).map(f=>fbCard(f,"history")):[el("p",{class:"empty",text:"아직 받은 피드백이 없어요."})]));
 }
+
+// =============== 공유 카드 ===============
+const TEST_DIST={"500":500,"1k":1000,"2k":2000,"5k":5000,"6k":6000};
+function pbCheck(rec){
+  const recs=S.records.filter(r=>r.athleteId===rec.athleteId&&r.id!==rec.id);
+  if(TEST_DIST[rec.type]){const prev=recs.filter(r=>r.type===rec.type).sort((x,y)=>x.timeSec-y.timeSec)[0];
+    return {pb:!prev||rec.timeSec<prev.timeSec,first:!prev,prev:prev?prev.timeSec:null,metric:"time"};}
+  if(rec.type==="ski"&&rec.distance===1000){const prev=recs.filter(r=>r.type==="ski"&&r.distance===1000).sort((x,y)=>x.timeSec-y.timeSec)[0];
+    return {pb:!prev||rec.timeSec<prev.timeSec,first:!prev,prev:prev?prev.timeSec:null,metric:"time"};}
+  if(rec.type==="30m"&&rec.distance){const prev=recs.filter(r=>r.type==="30m"&&r.distance).sort((x,y)=>y.distance-x.distance)[0];
+    return {pb:!prev||rec.distance>prev.distance,first:!prev,prev:prev?prev.distance:null,metric:"dist"};}
+  return null;
+}
+const FONT_T='"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif',FONT_M='"IBM Plex Mono",ui-monospace,Menlo,monospace';
+async function fontsReady(){try{await Promise.all(["700 60px","500 40px","400 30px"].map(f=>document.fonts.load(f+" "+FONT_T,"로잉노트 기록")).concat(["600 200px","500 60px"].map(f=>document.fonts.load(f+" "+FONT_M,"0123456789:.")))) ;}catch(e){}}
+function cardBase(c){
+  const W=1080,H=1920;c.width=W;c.height=H;const x=c.getContext("2d");
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,"#0a3640");g.addColorStop(.55,"#0e5e6f");g.addColorStop(1,"#127a8a");x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle="rgba(255,255,255,.06)";x.lineWidth=3;
+  for(let k=0;k<9;k++){x.beginPath();const y0=1180+k*80;for(let i=0;i<=W;i+=20){const y=y0+Math.sin(i/90+k)*14;i?x.lineTo(i,y):x.moveTo(i,y);}x.stroke();}
+  x.fillStyle="#fff";x.font="700 52px "+FONT_T;x.textBaseline="alphabetic";x.fillText("로잉",80,150);const w1=x.measureText("로잉").width;x.fillStyle="#ff7a45";x.fillText("노트",80+w1,150);
+  x.fillStyle="#ff7a45";x.globalAlpha=.8;for(let i=80;i<W-80;i+=44)x.fillRect(i,195,24,8);x.globalAlpha=1;
+  return x;
+}
+function fitText(x,txt,font,maxW,size){let s2=size;do{x.font=font.replace("{s}",s2);s2-=6;}while(x.measureText(txt).width>maxW&&s2>40);}
+function cardFooter(x,name){
+  const W=1080;x.textAlign="center";
+  if(name){x.fillStyle="#fff";x.font="600 46px "+FONT_T;x.fillText(name,W/2,1700);}
+  x.fillStyle="rgba(255,255,255,.75)";x.font="400 32px "+FONT_T;x.fillText("조정선수가 만든 로잉 훈련 노트",W/2,1790);
+  x.fillStyle="rgba(255,255,255,.55)";x.font="500 30px "+FONT_M;x.fillText("rowing-note.vercel.app",W/2,1840);x.textAlign="left";
+}
+function statBoxes(x,items,y){
+  const W=1080,pad=80,gap=24,n=items.length,bw=(W-pad*2-gap*(n-1))/n;
+  items.forEach(([l,v],i)=>{const bx=pad+i*(bw+gap);x.fillStyle="rgba(255,255,255,.1)";roundRect(x,bx,y,bw,200,28);x.fill();
+    x.fillStyle="rgba(255,255,255,.7)";x.font="500 32px "+FONT_T;x.textAlign="center";x.fillText(l,bx+bw/2,y+64);
+    x.fillStyle="#fff";fitText(x,v,"600 {s}px "+FONT_M,bw-30,76);x.fillText(v,bx+bw/2,y+158);x.textAlign="left";});
+}
+function roundRect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath();}
+const dotDate=d=>d.replace(/-/g,".");
+function drawRecordCard(c,rec,pb,showName){
+  const x=cardBase(c),W=1080,ty=typeOf(rec.type);
+  x.fillStyle="rgba(255,255,255,.8)";x.font="500 36px "+FONT_M;x.textAlign="right";x.fillText(dotDate(rec.date||today()),W-80,150);x.textAlign="left";
+  let y=420;
+  if(pb&&pb.pb){x.fillStyle="#ff7a45";const lbl=pb.first?"FIRST RECORD":pb.hist?"PERSONAL BEST":"NEW PB";x.font="700 48px "+FONT_T;const bw=x.measureText(lbl).width+80;roundRect(x,80,y-70,bw,96,48);x.fill();
+    x.fillStyle="#fff";x.fillText(lbl,120,y-6);y+=110;}
+  const title=TEST_DIST[rec.type]?ty.label:rec.type==="ski"?"스키에르그 "+(rec.distance||"")+"m":ty.run?"러닝 "+((rec.distance||0)/1000)+"km":rec.type==="30m"?"30분 최대 거리":(rec.type==="free"&&S.solo?"로잉":ty.label)+(rec.distance&&!ty.gym&&(ty.bike||ty.run)?" "+rec.distance.toLocaleString()+"m":"");
+  x.fillStyle="rgba(255,255,255,.85)";x.font="600 56px "+FONT_T;x.fillText(title,80,y);y+=40;
+  const big=rec.type==="30m"&&rec.distance?rec.distance.toLocaleString()+"m":TEST_DIST[rec.type]||rec.type==="ski"?fmtTime(rec.timeSec):ty.bike||ty.gym||ty.run?fmtTime(rec.timeSec,0):rec.distance?rec.distance.toLocaleString()+"m":fmtTime(rec.timeSec,0);
+  x.fillStyle="#fff";fitText(x,big,"600 {s}px "+FONT_M,W-160,230);x.fillText(big,74,y+230);y+=330;
+  if(pb&&pb.pb&&pb.prev!=null){const d2=pb.metric==="time"?"이전 "+fmtTime(pb.prev)+"  →  "+(pb.prev-rec.timeSec).toFixed(1)+"초 단축":"이전 "+pb.prev.toLocaleString()+"m  →  +"+(rec.distance-pb.prev)+"m";
+    x.fillStyle="#ffb48f";x.font="500 44px "+FONT_T;x.fillText(d2,80,y);}
+  const items=[];
+  if(ty.run&&rec.distance)items.push(["페이스",fmtTime(rec.timeSec/(rec.distance/1000),0)+"/km"],["거리",(rec.distance/1000)+"km"]);
+  else if(!ty.bike&&!ty.gym&&rec.distance){items.push(["/500m",fmtTime(split(rec.timeSec,rec.distance))]);if(!ty.water)items.push(["와트",Math.round(watts(rec.timeSec,rec.distance))+"W"]);}
+  if(ty.bike&&rec.power)items.push(["평균 파워",rec.power+"W"]);
+  if(TEST_DIST[rec.type]||rec.type==="30m"){}else if(!items.some(i=>i[0]==="시간")&&rec.timeSec&&items.length<3)items.push(["시간",fmtTime(rec.timeSec,0)]);
+  const kc=kcalOf(rec);if(kc&&items.length<3)items.push(["칼로리",kc+"kcal"]);
+  if(rec.rate&&items.length<3)items.push([ty.bike?"케이던스":"레이트",rec.rate+(ty.bike?"rpm":"spm")]);
+  if(rec.rpe&&items.length<3)items.push(["RPE",rec.rpe+"/10"]);
+  if(items.length)statBoxes(x,items.slice(0,3),1060);
+  const extra=[rec.rate&&!items.some(i=>i[0]==="레이트")?"레이트 "+rec.rate:null,rec.hr?"평균 심박 "+rec.hr:null,rec.rpe&&!items.some(i=>i[0]==="RPE")?"RPE "+rec.rpe:null].filter(Boolean).join("   ·   ");
+  if(extra){x.fillStyle="rgba(255,255,255,.75)";x.font="500 38px "+FONT_T;x.textAlign="center";x.fillText(extra,W/2,1360);x.textAlign="left";}
+  cardFooter(x,showName?(nameOf(rec)||rec.athleteName||""):"");
+}
+function drawWeekCard(c,a,showName){
+  const x=cardBase(c),W=1080;const mine=S.records.filter(r=>r.athleteId===a.id);
+  const ws=weekStart(today()),we=addDays(ws,6);const wk=mine.filter(r=>r.date>=ws&&r.date<=we);
+  x.fillStyle="rgba(255,255,255,.8)";x.font="500 36px "+FONT_M;x.textAlign="right";x.fillText(dotDate(ws).slice(5)+" – "+dotDate(we).slice(5),W-80,150);x.textAlign="left";
+  x.fillStyle="rgba(255,255,255,.85)";x.font="600 56px "+FONT_T;x.fillText("이번 주 훈련",80,420);
+  const km=wk.filter(r=>{const t2=typeOf(r.type);return !t2.bike&&!t2.gym&&!t2.run;}).reduce((s2,r)=>s2+(r.distance||0),0)/1000;
+  const mins=wk.reduce((s2,r)=>s2+(r.timeSec||0),0)/60;
+  const big=km>=0.1?(km>=100?Math.round(km):km.toFixed(1))+"km":Math.round(mins)+"분";
+  x.fillStyle="#fff";fitText(x,big,"600 {s}px "+FONT_M,W-160,230);x.fillText(big,74,690);
+  // 7-day bars
+  const days=[...Array(7)].map((_,i)=>addDays(ws,i));const per=days.map(d=>mine.filter(r=>r.date===d).reduce((s2,r)=>s2+(r.timeSec||0),0)/60);
+  const mx=Math.max(20,...per),bx0=110,bw=86,gap=(W-220-bw*7)/6,base=1080,hh=260;
+  days.forEach((d,i)=>{const h=per[i]/mx*hh,bx=bx0+i*(bw+gap);x.fillStyle="rgba(255,255,255,.12)";roundRect(x,bx,base-hh,bw,hh,18);x.fill();
+    if(h>0){x.fillStyle=d===today()?"#ff7a45":"#7fd1de";roundRect(x,bx,base-Math.max(h,24),bw,Math.max(h,24),18);x.fill();}
+    x.fillStyle="rgba(255,255,255,.8)";x.font="500 34px "+FONT_T;x.textAlign="center";x.fillText("월화수목금토일"[i],bx+bw/2,base+56);
+    if(per[i]>0){x.fillStyle="#fff";x.font="500 28px "+FONT_M;x.fillText(Math.round(per[i])+"′",bx+bw/2,base-Math.max(h,24)-14);}x.textAlign="left";});
+  const kc=wk.reduce((s2,r)=>s2+kcalOf(r),0);
+  statBoxes(x,[["세션",wk.length+"회"],["시간",Math.floor(mins/60)+":"+String(Math.round(mins%60)).padStart(2,"0")],["칼로리",Math.round(kc).toLocaleString()]],1230);
+  const daysSet=new Set(mine.map(r=>r.date));let st=0;{const d=new Date();if(!daysSet.has(ymd(d)))d.setDate(d.getDate()-1);while(daysSet.has(ymd(d))){st++;d.setDate(d.getDate()-1);}}
+  if(st>=2){x.fillStyle="#ffb48f";x.font="600 46px "+FONT_T;x.textAlign="center";x.fillText(st+"일 연속 기록 중",W/2,1540);x.textAlign="left";}
+  cardFooter(x,showName?a.name:"");
+}
+let shareState=null;
+async function openShare(st){
+  shareState=st;$("shareModal").hidden=false;$("shareImg").removeAttribute("src");
+  $("shareTitle").textContent=st.kind==="week"?"이번 주 요약 카드":st.pb&&st.pb.pb?"PB 공유 카드":"기록 공유 카드";
+  await renderShare();
+}
+async function renderShare(){
+  if(!shareState)return;await fontsReady();
+  const c=document.createElement("canvas");const nm=$("shareName").checked;
+  if(shareState.kind==="week")drawWeekCard(c,shareState.athlete,nm);else drawRecordCard(c,shareState.rec,shareState.pb,nm);
+  const blob=await new Promise(r=>c.toBlob(r,"image/png"));shareState.blob=blob;
+  if(shareState.url)URL.revokeObjectURL(shareState.url);shareState.url=URL.createObjectURL(blob);$("shareImg").src=shareState.url;
+  const file=new File([blob],"rowingnote.png",{type:"image/png"});shareState.file=file;
+  $("shareNative").hidden=!(navigator.canShare&&navigator.canShare({files:[file]}));
+}
+function shareName(){const r=shareState;return "로잉노트_"+(r.kind==="week"?"주간_"+today():(r.rec.date||today())+"_"+r.rec.type)+".png";}
+$("shareClose").onclick=()=>{$("shareModal").hidden=true;};
+$("shareModal").addEventListener("click",e=>{if(e.target.id==="shareModal")$("shareModal").hidden=true;});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("shareModal").hidden=true;});
+$("shareName").addEventListener("change",renderShare);
+$("shareSave").onclick=()=>{if(!shareState||!shareState.url)return;const a=document.createElement("a");a.href=shareState.url;a.download=shareName();document.body.append(a);a.click();a.remove();};
+$("shareNative").onclick=async()=>{try{await navigator.share({files:[new File([shareState.blob],shareName(),{type:"image/png"})],title:"로잉노트 기록"});}catch(e){}};
+$("shareWeekBtn").onclick=()=>{const {athletes}=D();const a=athletes.find(x=>x.id===$("meAthlete").value);if(!a)return;if(S.demo){alert("예시 데이터로는 카드를 만들 수 없어요. 기록을 저장한 뒤 해보세요.");return;}openShare({kind:"week",athlete:a});};
 
 // =============== 선수 관리 ===============
 let mgOpen=null,mgMembersAt=0,mgMembers=[];
